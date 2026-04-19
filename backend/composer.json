@@ -47,6 +47,7 @@
         "drupal/recaptcha": "^3.4",
         "drupal/restui": "^1.21",
         "drupal/sendgrid_integration": "^2.3",
+        "drupal/simple_oauth": "^6.1",
         "drupal/tara": "^11.0",
         "drupal/token": "^1.16",
         "drupal/vani": "^11.0",
