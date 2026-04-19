@@ -1,0 +1,7 @@
+services:
+  rail_baron_game.game_manager:
+    class: Drupal\rail_baron_game\GameManager
+    arguments:
+      - '@database'
+      - '@current_user'
+      - '@datetime.time'

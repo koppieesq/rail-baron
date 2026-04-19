@@ -1,0 +1,62 @@
+# All routes require an authenticated user.
+# Authentication is handled by Drupal's pluggable auth system:
+#   - basic_auth module: Authorization: Basic ... header
+#   - simple_oauth module: Authorization: Bearer ... header (preferred for the React SPA)
+
+rail_baron_game.create:
+  path: '/api/game'
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\GameController::createGame'
+    _title: 'Create Game'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+rail_baron_game.find:
+  path: '/api/game/find/{join_code}'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\GameController::find'
+    _title: 'Find Game by Join Code'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+rail_baron_game.state:
+  path: '/api/game/{game_id}/state'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\GameController::getState'
+    _title: 'Game State'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'
+
+rail_baron_game.join:
+  path: '/api/game/{game_id}/join'
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\GameController::join'
+    _title: 'Join Game'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'
+
+rail_baron_game.start:
+  path: '/api/game/{game_id}/start'
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\GameController::start'
+    _title: 'Start Game'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'
+
+rail_baron_game.update_player:
+  path: '/api/game/{game_id}/player'
+  methods: [PATCH]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\PlayerController::update'
+    _title: 'Update Player State'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'

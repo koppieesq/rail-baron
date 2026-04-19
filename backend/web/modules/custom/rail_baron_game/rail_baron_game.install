@@ -1,0 +1,163 @@
+<?php
+
+/**
+ * @file
+ * Install and schema definitions for Rail Baron Game module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function rail_baron_game_schema(): array {
+  $schema['rail_baron_game'] = [
+    'description' => 'Stores Rail Baron game sessions.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'join_code' => [
+        'type' => 'varchar',
+        'length' => 6,
+        'not null' => TRUE,
+        'description' => '6-character code players use to join.',
+      ],
+      'status' => [
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => 'waiting',
+        'description' => 'Game status: waiting, active, or finished.',
+      ],
+      'max_players' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 4,
+        'description' => 'Maximum number of players (2–6).',
+      ],
+      'current_turn_uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'UID of the player whose turn it currently is.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp when the game was created.',
+      ],
+      'updated' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp of the last state change.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'join_code' => ['join_code'],
+    ],
+    'indexes' => [
+      'status' => ['status'],
+    ],
+  ];
+
+  $schema['rail_baron_player_state'] = [
+    'description' => 'Stores per-player state within a Rail Baron game.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'game_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'FK to rail_baron_game.id.',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Drupal user ID.',
+      ],
+      'current_city_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'City ID (1–65) where the player currently is. 0 = unset.',
+      ],
+      'home_city_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'City ID of the player\'s home city (assigned at game start).',
+      ],
+      'destination_city_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Current destination city ID. 0 = none assigned yet.',
+      ],
+      'origin_city_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'City where the current haul started. 0 = none.',
+      ],
+      'money' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 20000,
+        'description' => 'Player\'s current cash in dollars.',
+      ],
+      'train_type' => [
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+        'default' => 'standard',
+        'description' => 'Train type: standard, express, or superchief.',
+      ],
+      'owned_railroads' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+        'default' => '[]',
+        'description' => 'JSON array of railroad abbreviations the player owns.',
+      ],
+      'turn_order' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Player\'s position in the turn rotation (0-indexed).',
+      ],
+      'updated' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp of last update to this player state.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'game_player' => ['game_id', 'uid'],
+    ],
+    'indexes' => [
+      'game_id' => ['game_id'],
+    ],
+  ];
+
+  return $schema;
+}
