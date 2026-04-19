@@ -1,0 +1,9 @@
+live:
+  host: rb-backend.koplowicz.com
+  user: Jordan
+  root: /var/www/rail-baron/backend/web
+  uri: http://rb.koplowicz.com
+local:
+  user: Jordan
+  root: /var/www/html/backend/web
+  uri: https://rail-baron.ddev.site/

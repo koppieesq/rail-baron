@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(grep:*)",
+      "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron log --all --oneline)",
+      "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron log --all -p --follow -- \"*.env\" \"*.php\" \"docker-compose*\" \"*.yaml\" \"*.yml\" \"*.key\" \"*.pem\")",
+      "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron ls-files)",
+      "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron log --all -p -- \"settings.php\")",
+      "Bash(git:*)"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rail-baron
+spec:
+  selector:
+    app: rail-baron
+  ports:
+    - name: drupal
+      port: 80
+      targetPort: 80
+    - name: react
+      port: 3000
+      targetPort: 3000

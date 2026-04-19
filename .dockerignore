@@ -1,0 +1,22 @@
+# Git / IDE
+.git/
+.idea/
+.ddev/
+
+# Backend — composer-managed (rebuilt in Docker)
+backend/vendor/
+backend/web/core/
+backend/web/modules/contrib/
+backend/web/themes/contrib/
+backend/web/sites/*/files/
+backend/web/sites/default/settings.ddev.php
+
+# Frontend — npm-managed (rebuilt in Docker)
+frontend/node_modules/
+frontend/build/
+frontend/.env.development
+frontend/.env.local
+
+# Misc
+*.sql
+*.sql.gz

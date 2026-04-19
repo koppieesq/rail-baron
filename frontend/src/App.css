@@ -1,0 +1,69 @@
+/* Google Webfonts */
+h1 {
+  font-family: "Rye", serif;
+}
+
+body {
+  font-family: "Libre Bodoni", "Georgia", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.app-header {
+  background-color: #282c34;
+  background-image: url("../public/board.jpg");
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.header-logo {
+  height: 8vw;
+  max-height: 60px;
+  width: auto;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+.header-title {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-wrap: break-word;
+  text-align: center;
+}
+
+.main-content {
+  padding-left: 2em;
+  padding-right: 2em;
+}
+
+/* Chatbot styling goes here because it's a shared component */
+.chatbot {
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

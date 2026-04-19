@@ -1,0 +1,6 @@
+name: Update Config Entity Module
+description: Fixes Error - A non-existent config entity name returned by FieldStorageConfigInterface::getBundles() entity type comment, bundle.
+package: Custom
+
+type: module
+core_version_requirement: ^9.4 || ^10 || ^11

@@ -1,0 +1,4 @@
+#!/bin/bash
+# ddev custom command: phpcs
+cd /var/www/html/kands-d10
+vendor/bin/phpcs "$@"

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(colima status:*)",
+      "Bash(ddev status:*)",
+      "Bash(ddev start:*)",
+      "WebFetch(domain:skillsmp.com)",
+      "Bash(curl:*)",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}

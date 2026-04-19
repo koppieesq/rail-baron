@@ -1,0 +1,12 @@
+.idea/
+vendor
+backend/web/core
+.env.build
+k8s/secret.yaml
+backend/web/modules/contrib
+backend/web/themes/contrib
+backend/web/sites/*/files/
+settings.ddev.php
+secure
+*.sql
+*.sql.gz

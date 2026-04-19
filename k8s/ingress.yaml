@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rail-baron
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - rb.koplowicz.com
+      secretName: rb-koplowicz-tls
+    - hosts:
+        - rail-baron.koplowicz.com
+      secretName: rail-baron-koplowicz-tls
+  rules:
+    - host: rb.koplowicz.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rail-baron
+                port:
+                  number: 80
+    - host: rail-baron.koplowicz.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rail-baron
+                port:
+                  number: 3000

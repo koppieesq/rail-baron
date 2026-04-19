@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rail-baron
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rail-baron
+  template:
+    metadata:
+      labels:
+        app: rail-baron
+    spec:
+      imagePullSecrets:
+        - name: registry-koppie   # created by: doctl registry kubernetes-manifest | kubectl apply -f -
+      containers:
+        - name: rail-baron
+          image: registry.digitalocean.com/koppie/rail-baron:latest
+          ports:
+            - containerPort: 80
+              name: drupal
+            - containerPort: 3000
+              name: react
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: rail-baron-secrets
+                  key: db-host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: rail-baron-secrets
+                  key: db-port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: rail-baron-secrets
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rail-baron-secrets
+                  key: db-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rail-baron-secrets
+                  key: db-password
+            - name: DRUPAL_HASH_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: rail-baron-secrets
+                  key: drupal-hash-salt
+            - name: TRUSTED_HOST_PATTERNS
+              value: "^rb\\.koplowicz\\.com$"
+            - name: DB_SSL_CA
+              value: /etc/ssl/do-db-ca/ca-cert.crt
+          volumeMounts:
+            - name: do-db-ca
+              mountPath: /etc/ssl/do-db-ca
+              readOnly: true
+      volumes:
+        - name: do-db-ca
+          secret:
+            secretName: rail-baron-secrets
+            items:
+              - key: db-ca-cert
+                path: ca-cert.crt

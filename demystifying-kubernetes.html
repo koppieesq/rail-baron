@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demystifying Kubernetes — Jordan Koplowicz</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;800&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+/* ===========================================
+   CSS CUSTOM PROPERTIES — SWISS MODERN THEME
+   Change :root values to retheme the whole deck
+   =========================================== */
+:root {
+  --bg: #ffffff;
+  --ink: #0a0a0a;
+  --red: #ff3300;
+  --gray-light: rgba(0,0,0,0.06);
+  --gray-mid: rgba(0,0,0,0.12);
+  --gray-text: #666;
+  --grid-size: clamp(40px, 6vw, 72px);
+
+  /* Typography — all clamp() */
+  --title-size: clamp(1.5rem, 5vw, 4rem);
+  --h2-size:    clamp(1.2rem, 3.2vw, 2.4rem);
+  --h3-size:    clamp(1rem, 2.2vw, 1.6rem);
+  --body-size:  clamp(0.75rem, 1.4vw, 1.05rem);
+  --small-size: clamp(0.62rem, 0.95vw, 0.85rem);
+  --mono-size:  clamp(0.65rem, 1.1vw, 0.9rem);
+
+  /* Spacing */
+  --slide-padding: clamp(1rem, 4vw, 4rem);
+  --content-gap:   clamp(0.5rem, 1.8vw, 1.8rem);
+  --element-gap:   clamp(0.25rem, 0.9vw, 0.9rem);
+
+  /* Left column width */
+  --left-col: clamp(120px, 18vw, 240px);
+
+  /* Animation */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 0.65s;
+}
+
+/* ===========================================
+   VIEWPORT BASE (mandatory)
+   =========================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overflow-x: hidden; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+body { background: var(--bg); font-family: 'Nunito', sans-serif; color: var(--ink); }
+
+.slide {
+  width: 100vw; height: 100vh; height: 100dvh;
+  overflow: hidden; scroll-snap-align: start;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+
+.slide-content {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; max-height: 100%; overflow: hidden;
+  padding: var(--slide-padding);
+}
+
+img, .image-container { max-width: 100%; max-height: min(50vh, 400px); object-fit: contain; }
+
+@media (max-height: 700px) {
+  :root { --slide-padding: clamp(0.75rem, 3vw, 2rem); --title-size: clamp(1.2rem, 4vw, 2.5rem); --h2-size: clamp(1rem, 2.8vw, 1.8rem); }
+}
+@media (max-height: 600px) {
+  :root { --slide-padding: clamp(0.5rem, 2vw, 1.5rem); --title-size: clamp(1rem, 3.5vw, 2rem); --body-size: clamp(0.68rem, 1.1vw, 0.9rem); }
+  .nav-dots, .keyboard-hint { display: none; }
+}
+@media (max-height: 500px) {
+  :root { --slide-padding: clamp(0.4rem, 2vw, 1rem); --title-size: clamp(0.9rem, 3vw, 1.5rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+  html { scroll-behavior: auto; }
+}
+
+/* ===========================================
+   PROGRESS BAR
+   =========================================== */
+.progress-bar {
+  position: fixed; top: 0; left: 0; height: 5px;
+  background: var(--red); z-index: 1000;
+  width: 0%; transition: width 0.3s ease;
+}
+
+/* ===========================================
+   NAV DOTS
+   =========================================== */
+.nav-dots {
+  position: fixed; right: clamp(0.75rem, 2vw, 1.5rem); top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column;
+  gap: clamp(6px, 1vh, 10px); z-index: 900;
+  list-style: none;
+}
+.nav-dots button {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(10,10,10,0.2); border: none; cursor: pointer;
+  padding: 0; transition: background 0.3s, transform 0.3s;
+}
+.nav-dots button.active { background: var(--red); transform: scale(1.4); }
+
+/* ===========================================
+   SWISS MODERN — SHARED SLIDE STRUCTURE
+   =========================================== */
+
+/* Subtle grid overlay on every slide */
+.slide::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, var(--gray-light) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gray-light) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  pointer-events: none; z-index: 0;
+}
+
+/* Red top accent bar */
+.slide::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 5px; background: var(--red); z-index: 20;
+}
+
+/* Two-column layout: narrow label col | wide content col */
+.sw-layout {
+  position: absolute; inset: 0;
+  display: grid;
+  grid-template-columns: var(--left-col) 1fr;
+  z-index: 2;
+}
+
+.sw-left {
+  border-right: 2px solid var(--gray-mid);
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--slide-padding);
+  gap: var(--element-gap);
+  overflow: hidden;
+}
+
+/* Vertical section tag */
+.sw-tag {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800; font-size: var(--small-size);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--red); writing-mode: vertical-rl;
+  transform: rotate(180deg); align-self: flex-start;
+}
+
+/* Large ghost number */
+.sw-num {
+  font-family: 'Archivo', sans-serif; font-weight: 800;
+  font-size: clamp(3.5rem, 10vw, 9rem);
+  color: var(--ink); line-height: 1; opacity: 0.06;
+  margin-bottom: calc(-1 * clamp(0.4rem, 1.5vh, 1.5rem));
+  user-select: none;
+}
+
+.sw-right {
+  padding: var(--slide-padding);
+  padding-left: clamp(1.5rem, 3.5vw, 4rem);
+  display: flex; flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Bottom black bar */
+.sw-footer {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: clamp(32px, 4.5vh, 46px); background: var(--ink);
+  display: flex; align-items: center;
+  padding: 0 var(--slide-padding);
+  justify-content: space-between; z-index: 10;
+}
+.sw-footer span {
+  font-family: 'Archivo', sans-serif;
+  font-size: var(--small-size); color: #fff;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.sw-footer .pip {
+  width: 6px; height: 6px;
+  border-radius: 50%; background: var(--red);
+}
+
+/* ===========================================
+   TYPOGRAPHY
+   =========================================== */
+.kicker {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800; font-size: var(--small-size);
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--red); margin-bottom: clamp(0.5rem, 1.2vh, 1.2rem);
+}
+
+h1 {
+  font-family: 'Archivo', sans-serif; font-weight: 800;
+  font-size: var(--title-size); line-height: 1.05;
+  color: var(--ink); margin-bottom: clamp(0.5rem, 1.5vh, 1.5rem);
+}
+
+h2 {
+  font-family: 'Archivo', sans-serif; font-weight: 800;
+  font-size: var(--h2-size); line-height: 1.1;
+  color: var(--ink); margin-bottom: clamp(0.6rem, 1.8vh, 1.8rem);
+}
+
+h3 {
+  font-family: 'Archivo', sans-serif; font-weight: 700;
+  font-size: var(--h3-size); color: var(--ink);
+  margin-bottom: clamp(0.3rem, 0.8vh, 0.8rem);
+}
+
+.red-rule {
+  height: 3px; background: var(--red);
+  margin-bottom: clamp(0.75rem, 1.8vh, 1.8rem);
+  width: clamp(36px, 6vw, 72px);
+}
+
+p.lead {
+  font-size: var(--body-size); color: var(--gray-text);
+  max-width: 52ch; line-height: 1.65;
+  margin-bottom: clamp(0.5rem, 1.2vh, 1.2rem);
+}
+
+.meta {
+  font-size: var(--small-size); color: #aaa;
+  letter-spacing: 0.06em;
+  margin-top: clamp(0.75rem, 1.5vh, 1.5rem);
+}
+
+/* ===========================================
+   BULLET LISTS
+   =========================================== */
+.sw-bullets {
+  list-style: none; display: flex; flex-direction: column;
+  gap: clamp(0.4rem, 1.2vh, 1.2rem);
+  max-height: calc(100vh - clamp(120px, 20vh, 200px));
+  overflow: hidden;
+}
+.sw-bullets li {
+  display: flex; align-items: flex-start;
+  gap: clamp(0.6rem, 1.5vw, 1.2rem);
+  font-size: var(--body-size); line-height: 1.5;
+}
+.sw-bullets li::before {
+  content: '';
+  flex-shrink: 0;
+  width: clamp(5px, 0.7vw, 8px); height: clamp(5px, 0.7vw, 8px);
+  border-radius: 50%; background: var(--red);
+  margin-top: 0.45em;
+}
+.sw-bullets li strong { font-weight: 700; color: var(--ink); }
+.sw-bullets li span { color: var(--gray-text); }
+
+/* Numbered list variant */
+.sw-numbered {
+  list-style: none; display: flex; flex-direction: column;
+  gap: clamp(0.4rem, 1.1vh, 1.1rem); counter-reset: sw-counter;
+}
+.sw-numbered li {
+  display: grid; grid-template-columns: clamp(1.6rem, 2.5vw, 2.4rem) 1fr;
+  gap: clamp(0.5rem, 1.2vw, 1rem);
+  font-size: var(--body-size); line-height: 1.5;
+  counter-increment: sw-counter;
+  align-items: start;
+}
+.sw-numbered li::before {
+  content: counter(sw-counter, decimal-leading-zero);
+  font-family: 'Archivo', sans-serif; font-weight: 800;
+  font-size: var(--small-size); color: var(--red);
+  padding-top: 0.1em;
+}
+
+/* ===========================================
+   TWO-COLUMN CONTENT LAYOUT
+   =========================================== */
+.sw-two-col {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: start;
+}
+.sw-col-head {
+  font-family: 'Archivo', sans-serif; font-weight: 800;
+  font-size: var(--h3-size); color: var(--ink);
+  padding-bottom: clamp(0.4rem, 1vh, 0.8rem);
+  border-bottom: 2px solid var(--red);
+  margin-bottom: clamp(0.5rem, 1.2vh, 1.2rem);
+}
+
+/* ===========================================
+   CODE BLOCK
+   =========================================== */
+.sw-code {
+  background: var(--ink); color: #e8e8e8;
+  padding: clamp(0.75rem, 1.8vh, 1.5rem) clamp(1rem, 2.5vw, 2rem);
+  font-family: 'Courier New', monospace;
+  font-size: var(--mono-size); line-height: 1.65;
+  border-left: 4px solid var(--red);
+  max-height: min(45vh, 360px); overflow: hidden;
+}
+.sw-code .comment { color: #6a6a6a; }
+.sw-code .keyword { color: #ff9966; }
+.sw-code .string { color: #99cc77; }
+.sw-code .cmd { color: #66aaff; }
+
+/* ===========================================
+   BADGE / PILL
+   =========================================== */
+.sw-badge {
+  display: inline-block;
+  font-family: 'Archivo', sans-serif; font-weight: 700;
+  font-size: var(--small-size); letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.25em 0.75em;
+  border: 2px solid var(--red); color: var(--red);
+  margin-right: 0.5rem; margin-bottom: 0.4rem;
+}
+.sw-badge.filled { background: var(--red); color: #fff; }
+
+/* ===========================================
+   CALLOUT / QUOTE BOX
+   =========================================== */
+.sw-callout {
+  border-left: 4px solid var(--red);
+  padding: clamp(0.75rem, 1.8vh, 1.5rem) clamp(1rem, 2.5vw, 2rem);
+  background: rgba(255,51,0,0.04);
+  font-size: var(--body-size); line-height: 1.6;
+  color: var(--gray-text); font-style: italic;
+  max-width: 56ch;
+  margin-top: clamp(0.5rem, 1.2vh, 1.2rem);
+}
+.sw-callout strong { color: var(--ink); font-style: normal; }
+
+/* ===========================================
+   REVEAL ANIMATIONS (triggered by .visible class)
+   =========================================== */
+.reveal {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.slide.visible .reveal { opacity: 1; transform: translateY(0); }
+.slide.visible .reveal:nth-child(1) { transition-delay: 0.08s; }
+.slide.visible .reveal:nth-child(2) { transition-delay: 0.18s; }
+.slide.visible .reveal:nth-child(3) { transition-delay: 0.28s; }
+.slide.visible .reveal:nth-child(4) { transition-delay: 0.38s; }
+.slide.visible .reveal:nth-child(5) { transition-delay: 0.46s; }
+.slide.visible .reveal:nth-child(6) { transition-delay: 0.54s; }
+
+.reveal-left {
+  opacity: 0; transform: translateX(-24px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.slide.visible .reveal-left { opacity: 1; transform: translateX(0); }
+
+/* Rule expands from zero width */
+.slide.visible .red-rule {
+  animation: expandRule var(--dur) var(--ease) 0.2s both;
+}
+@keyframes expandRule {
+  from { width: 0; } to { width: clamp(36px, 6vw, 72px); }
+}
+
+/* ===========================================
+   INLINE EDIT MODE
+   =========================================== */
+.edit-hotzone {
+  position: fixed; top: 0; left: 0;
+  width: 80px; height: 80px; z-index: 10000; cursor: pointer;
+}
+.edit-toggle {
+  position: fixed; top: 14px; left: 14px;
+  background: var(--ink); color: #fff; border: none;
+  padding: 6px 12px; font-size: 13px; cursor: pointer;
+  z-index: 10001; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease; letter-spacing: 0.08em;
+  font-family: 'Archivo', sans-serif; font-weight: 700;
+}
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+.edit-toggle.active { background: var(--red); }
+
+.edit-banner {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--ink); color: #fff;
+  padding: 8px var(--slide-padding); z-index: 9999;
+  font-family: 'Archivo', sans-serif; font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center;
+  transform: translateY(100%); transition: transform 0.3s ease;
+}
+.edit-banner.active { transform: translateY(0); }
+.edit-banner .save-hint { color: rgba(255,255,255,0.5); }
+
+body.edit-active [contenteditable] {
+  outline: 2px dashed rgba(255,51,0,0.4);
+  outline-offset: 2px; cursor: text;
+}
+
+/* ===========================================
+   SLIDE 1 — TITLE
+   =========================================== */
+#s1 h1 { font-size: var(--title-size); }
+#s1 .tagline {
+  font-size: var(--body-size); color: var(--gray-text);
+  max-width: 46ch; line-height: 1.6;
+  margin-bottom: clamp(1rem, 2.5vh, 2.5rem);
+}
+
+/* ===========================================
+   SLIDE 14 — CLOSING
+   =========================================== */
+#s14 .big-thanks {
+  font-family: 'Archivo', sans-serif; font-weight: 800;
+  font-size: clamp(2rem, 7vw, 5.5rem);
+  color: var(--ink); line-height: 1.0;
+  margin-bottom: clamp(0.5rem, 1.5vh, 1.5rem);
+}
+#s14 .big-thanks em { color: var(--red); font-style: normal; }
+
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Nav dots -->
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+<!-- Inline edit controls -->
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle">✏ Edit</button>
+<div class="edit-banner" id="editBanner">
+  <span>Edit mode — click any text to edit</span>
+  <span class="save-hint">Ctrl+S to save file · E to exit</span>
+</div>
+
+<!-- ==========================================
+     SLIDE 1 — TITLE
+     ========================================== -->
+<section class="slide" id="s1">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Kubernetes · Drupal</span>
+      <div class="sw-num">01</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">Conference Talk · Drupal &amp; DevOps</div>
+      <h1 class="reveal">Demystifying<br>Kubernetes</h1>
+      <div class="red-rule"></div>
+      <p class="tagline reveal">A gentle introduction for Drupal developers — Dockerfiles, local dev, and cloud deployment. No prior Kubernetes experience required.</p>
+      <p class="meta reveal">Jordan Koplowicz</p>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>DrupalCon</span><div class="pip"></div><span>2026</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 2 — AGENDA
+     ========================================== -->
+<section class="slide" id="s2">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Agenda</span>
+      <div class="sw-num">02</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">What we'll cover</div>
+      <h2 class="reveal">The Plan</h2>
+      <div class="red-rule"></div>
+      <ol class="sw-numbered">
+        <li class="reveal"><span>What is Kubernetes, and why should Drupal developers care?</span></li>
+        <li class="reveal"><span>The Dockerfile — your options, and how to write your own</span></li>
+        <li class="reveal"><span>Running Kubernetes locally</span></li>
+        <li class="reveal"><span>Deploying to the cloud</span></li>
+        <li class="reveal"><span>Persistent storage &amp; databases</span></li>
+        <li class="reveal"><span>DDEV, Lando — do you still need them?</span></li>
+      </ol>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Agenda</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 3 — WHAT IS KUBERNETES?
+     ========================================== -->
+<section class="slide" id="s3">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Basics</span>
+      <div class="sw-num">03</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">The 30-second version</div>
+      <h2 class="reveal">What Is Kubernetes?</h2>
+      <div class="red-rule"></div>
+      <ul class="sw-bullets">
+        <li class="reveal"><span><strong>A container orchestrator</strong> — it runs your Docker containers, decides where they live, and keeps them alive</span></li>
+        <li class="reveal"><span><strong>Open source</strong>, originally from Google, now the industry standard</span></li>
+        <li class="reveal"><span><strong>Scales automatically</strong> — need more traffic? Kubernetes spins up more copies of your app</span></li>
+        <li class="reveal"><span><strong>Self-healing</strong> — crashed container? It restarts it without you lifting a finger</span></li>
+      </ul>
+      <div class="sw-callout reveal">
+        If Docker is like a shipping container, Kubernetes is the port authority managing thousands of them.
+      </div>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>What Is Kubernetes?</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 4 — WHY KUBERNETES FOR DRUPAL?
+     ========================================== -->
+<section class="slide" id="s4">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Motivation</span>
+      <div class="sw-num">04</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">Why should we care?</div>
+      <h2 class="reveal">Kubernetes &amp; Drupal</h2>
+      <div class="red-rule"></div>
+      <ul class="sw-bullets">
+        <li class="reveal"><span><strong>Consistency</strong> — the same container runs locally, in staging, and in production. No more "works on my machine"</span></li>
+        <li class="reveal"><span><strong>Hosting flexibility</strong> — DigitalOcean, AWS, GCP, Azure — all speak Kubernetes. You're not locked in</span></li>
+        <li class="reveal"><span><strong>Scalability</strong> — handle traffic spikes by scaling your Drupal pods horizontally</span></li>
+        <li class="reveal"><span><strong>GitOps-ready</strong> — your entire infrastructure lives in code, next to your Drupal codebase</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Why Kubernetes?</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 5 — THE DOCKERFILE: YOUR OPTIONS
+     ========================================== -->
+<section class="slide" id="s5">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Dockerfile</span>
+      <div class="sw-num">05</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">Special attention</div>
+      <h2 class="reveal">The Dockerfile —<br>Your Options</h2>
+      <div class="red-rule"></div>
+      <div class="sw-two-col reveal">
+        <div>
+          <div class="sw-col-head">Use an existing one</div>
+          <ul class="sw-bullets">
+            <li><span>Official <code>drupal</code> image on Docker Hub</span></li>
+            <li><span>Wodby's <code>drupal-php</code> — battle-tested</span></li>
+            <li><span>Fast to start, less control</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="sw-col-head">Build your own</div>
+          <ul class="sw-bullets">
+            <li><span>Full control over PHP extensions</span></li>
+            <li><span>Smaller, purpose-built image</span></li>
+            <li><span>Matches your exact Drupal setup</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead reveal" style="margin-top: clamp(0.75rem,1.5vh,1.5rem)">We'll focus on building your own — it's not as scary as it sounds.</p>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Dockerfile Options</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 6 — DOCKERFILE ANATOMY
+     ========================================== -->
+<section class="slide" id="s6">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Dockerfile</span>
+      <div class="sw-num">06</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">The key layers</div>
+      <h2 class="reveal">Anatomy of a Drupal Dockerfile</h2>
+      <div class="red-rule"></div>
+      <div class="sw-code reveal">
+<span class="comment"># Start from official PHP-FPM Alpine (small &amp; fast)</span>
+<span class="keyword">FROM</span> <span class="string">php:8.3-fpm-alpine</span>
+
+<span class="comment"># Install Drupal's required PHP extensions</span>
+<span class="keyword">RUN</span> docker-php-ext-install pdo pdo_mysql opcache
+
+<span class="comment"># Install Composer</span>
+<span class="keyword">COPY</span> --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+<span class="comment"># Copy your Drupal codebase in</span>
+<span class="keyword">COPY</span> . /var/www/html
+
+<span class="comment"># Set working directory</span>
+<span class="keyword">WORKDIR</span> /var/www/html
+
+<span class="comment"># Expose PHP-FPM port</span>
+<span class="keyword">EXPOSE</span> 9000</div>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Dockerfile Anatomy</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 7 — BUILD YOUR OWN: KEY DECISIONS
+     ========================================== -->
+<section class="slide" id="s7">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Dockerfile</span>
+      <div class="sw-num">07</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">Build your own</div>
+      <h2 class="reveal">Key Decisions to Make</h2>
+      <div class="red-rule"></div>
+      <ul class="sw-bullets">
+        <li class="reveal"><span><strong>Base image</strong> — <code>php:8.3-fpm-alpine</code> is small and fast; <code>-bookworm</code> has more system libs available</span></li>
+        <li class="reveal"><span><strong>PHP extensions</strong> — Drupal needs <code>pdo_mysql</code>, <code>gd</code>, <code>opcache</code>, <code>apcu</code>; add more for your modules</span></li>
+        <li class="reveal"><span><strong>Nginx vs Apache</strong> — run as a sidecar container, or bake Nginx in with a custom entrypoint</span></li>
+        <li class="reveal"><span><strong>Build vs runtime</strong> — run Composer during build (good for prod), or mount vendor/ as a volume (good for local dev)</span></li>
+        <li class="reveal"><span><strong>Non-root user</strong> — always run the app as a non-root user in production</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Build Your Own</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 8 — LOCAL DEVELOPMENT
+     ========================================== -->
+<section class="slide" id="s8">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Local Dev</span>
+      <div class="sw-num">08</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">Running locally</div>
+      <h2 class="reveal">Kubernetes on<br>Your Laptop</h2>
+      <div class="red-rule"></div>
+      <div class="sw-two-col">
+        <div>
+          <div class="sw-col-head reveal">Local cluster options</div>
+          <ul class="sw-bullets">
+            <li class="reveal"><span><strong>minikube</strong> — classic, full-featured, runs a VM</span></li>
+            <li class="reveal"><span><strong>kind</strong> — Kubernetes in Docker, no VM needed</span></li>
+            <li class="reveal"><span><strong>k3d</strong> — lightweight k3s in Docker, very fast</span></li>
+            <li class="reveal"><span><strong>Docker Desktop</strong> — one-click enable, great for getting started</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="sw-col-head reveal">The basic workflow</div>
+          <ul class="sw-bullets">
+            <li class="reveal"><span>Build your image: <code>docker build</code></span></li>
+            <li class="reveal"><span>Load it into the cluster: <code>kind load</code></span></li>
+            <li class="reveal"><span>Apply your manifests: <code>kubectl apply -f</code></span></li>
+            <li class="reveal"><span>Port-forward to test: <code>kubectl port-forward</code></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Local Kubernetes</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 9 — DDEV & LANDO: STILL WORTH IT?
+     ========================================== -->
+<section class="slide" id="s9">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Local Dev</span>
+      <div class="sw-num">09</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">A question I know you're asking</div>
+      <h2 class="reveal">What About DDEV<br>&amp; Lando?</h2>
+      <div class="red-rule"></div>
+      <ul class="sw-bullets">
+        <li class="reveal"><span><strong>DDEV and Lando are excellent</strong> — purpose-built for Drupal local dev, zero config friction</span></li>
+        <li class="reveal"><span><strong>They are not competitors</strong> to Kubernetes — they run Docker under the hood anyway</span></li>
+        <li class="reveal"><span><strong>Use DDEV/Lando for day-to-day development</strong> — Xdebug, `drush`, Mailhog — it all just works</span></li>
+        <li class="reveal"><span><strong>Use Kubernetes for staging and production</strong> — or when you need to test your deployment config locally</span></li>
+      </ul>
+      <div class="sw-callout reveal">
+        <strong>Short answer:</strong> Yes, keep using DDEV. Kubernetes lives at the deployment layer, not the developer laptop layer.
+      </div>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>DDEV &amp; Lando</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 10 — CLOUD DEPLOYMENT
+     ========================================== -->
+<section class="slide" id="s10">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Cloud</span>
+      <div class="sw-num">10</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">Going live</div>
+      <h2 class="reveal">Deploying to<br>the Cloud</h2>
+      <div class="red-rule"></div>
+      <ol class="sw-numbered">
+        <li class="reveal"><span><strong>Push your image</strong> to a container registry (Docker Hub, DigitalOcean, GitHub Packages)</span></li>
+        <li class="reveal"><span><strong>Provision a cluster</strong> — DigitalOcean DOKS, AWS EKS, or GKE — all are Kubernetes under the hood</span></li>
+        <li class="reveal"><span><strong>Write a Deployment manifest</strong> — tells Kubernetes which image to run, how many replicas, resource limits</span></li>
+        <li class="reveal"><span><strong>Expose it with a Service + Ingress</strong> — route external traffic to your pods, add TLS via cert-manager</span></li>
+        <li class="reveal"><span><strong>Apply with kubectl</strong> — <code>kubectl apply -f k8s/</code> and you're live</span></li>
+      </ol>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Cloud Deployment</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 11 — PERSISTENT STORAGE
+     ========================================== -->
+<section class="slide" id="s11">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Storage</span>
+      <div class="sw-num">11</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">A common gotcha</div>
+      <h2 class="reveal">Persistent Storage</h2>
+      <div class="red-rule"></div>
+      <ul class="sw-bullets">
+        <li class="reveal"><span><strong>Containers are ephemeral</strong> — when a pod restarts, the filesystem resets. Your <code>files/</code> directory disappears</span></li>
+        <li class="reveal"><span><strong>PersistentVolumeClaims (PVCs)</strong> — attach a persistent disk to your pod. Survives restarts</span></li>
+        <li class="reveal"><span><strong>ReadWriteMany is tricky</strong> — multiple pod replicas all need to read/write the same files directory</span></li>
+        <li class="reveal"><span><strong>Better approach: object storage</strong> — use S3 or DigitalOcean Spaces + the Drupal S3FS module. No shared filesystem needed</span></li>
+      </ul>
+      <div class="sw-callout reveal">
+        The <strong>s3fs</strong> Drupal module lets you point <code>public://</code> at an S3-compatible bucket — no PVC headaches, scales infinitely.
+      </div>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Persistent Storage</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 12 — THE DATABASE QUESTION
+     ========================================== -->
+<section class="slide" id="s12">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Database</span>
+      <div class="sw-num">12</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">What about MySQL?</div>
+      <h2 class="reveal">The Database Question</h2>
+      <div class="red-rule"></div>
+      <div class="sw-two-col">
+        <div>
+          <div class="sw-col-head reveal">In-cluster DB</div>
+          <ul class="sw-bullets">
+            <li class="reveal"><span>Run MySQL/MariaDB as a pod</span></li>
+            <li class="reveal"><span>Fine for dev/staging</span></li>
+            <li class="reveal"><span>You manage backups, failover, upgrades</span></li>
+            <li class="reveal"><span>Use a PVC for data persistence</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="sw-col-head reveal">Managed DB (recommended)</div>
+          <ul class="sw-bullets">
+            <li class="reveal"><span>DigitalOcean Managed MySQL, RDS, Cloud SQL</span></li>
+            <li class="reveal"><span>Automatic backups &amp; failover</span></li>
+            <li class="reveal"><span>Lives outside the cluster — survives cluster rebuilds</span></li>
+            <li class="reveal"><span>Just point Drupal's <code>settings.php</code> at it</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Database</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 13 — BONUS: OPEN SOURCE STARTER
+     ========================================== -->
+<section class="slide" id="s13">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Bonus</span>
+      <div class="sw-num">13</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">Take-home gift</div>
+      <h2 class="reveal">Open Source<br>Drupal K8s Starter</h2>
+      <div class="red-rule"></div>
+      <p class="lead reveal">I've open-sourced the Dockerfile and Kubernetes manifests I use in production. Everything we've talked about today — in one repo, ready to clone.</p>
+      <div class="sw-code reveal">
+<span class="comment"># Clone the starter kit</span>
+<span class="cmd">git clone</span> github.com/jkoplowicz/drupal-k8s-starter
+
+<span class="comment"># What's inside:</span>
+<span class="comment">#   Dockerfile         — PHP-FPM + Nginx, production-ready</span>
+<span class="comment">#   k8s/               — Deployment, Service, Ingress manifests</span>
+<span class="comment">#   k8s/secrets.yaml   — Template for DB credentials</span>
+<span class="comment">#   README.md          — Step-by-step setup guide</span></div>
+      <div style="margin-top: clamp(0.6rem, 1.5vh, 1.5rem)">
+        <span class="sw-badge filled reveal">Free</span>
+        <span class="sw-badge reveal">MIT License</span>
+        <span class="sw-badge reveal">Drupal 10/11</span>
+      </div>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Bonus</span>
+  </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 14 — Q&A / THANK YOU
+     ========================================== -->
+<section class="slide" id="s14">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Q&amp;A</span>
+      <div class="sw-num">14</div>
+    </div>
+    <div class="sw-right">
+      <div class="kicker reveal">That's a wrap</div>
+      <div class="big-thanks reveal">Thank<br><em>you.</em></div>
+      <div class="red-rule"></div>
+      <p class="lead reveal">Questions? I'll be around after the session — find me, or reach out online.</p>
+      <ul class="sw-bullets" style="margin-top: clamp(0.5rem,1.2vh,1.2rem)">
+        <li class="reveal"><span><strong>Slides &amp; starter kit</strong> — github.com/jkoplowicz/drupal-k8s-starter</span></li>
+        <li class="reveal"><span><strong>Drupal.org</strong> — drupal.org/u/jkoplowicz</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sw-footer">
+    <span>Jordan Koplowicz</span><div class="pip"></div><span>DrupalCon 2026</span>
+  </div>
+</section>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   =========================================== */
+class SlidePresentation {
+  constructor() {
+    this.slides     = Array.from(document.querySelectorAll('.slide'));
+    this.total      = this.slides.length;
+    this.current    = 0;
+    this.scrolling  = false;
+
+    this.progressBar = document.getElementById('progressBar');
+    this.navDots     = document.getElementById('navDots');
+
+    this.buildNavDots();
+    this.setupObserver();
+    this.setupKeyboard();
+    this.setupTouch();
+    this.setupWheel();
+    this.updateProgress(0);
+  }
+
+  /* Build navigation dots — always clear first to prevent duplicates */
+  buildNavDots() {
+    this.navDots.innerHTML = '';
+    this.slides.forEach((_, i) => {
+      const btn = document.createElement('button');
+      btn.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      btn.addEventListener('click', () => this.goTo(i));
+      this.navDots.appendChild(btn);
+    });
+    this.refreshDots(0);
+  }
+
+  refreshDots(idx) {
+    this.navDots.querySelectorAll('button').forEach((btn, i) => {
+      btn.classList.toggle('active', i === idx);
+    });
+  }
+
+  updateProgress(idx) {
+    const pct = this.total > 1 ? (idx / (this.total - 1)) * 100 : 100;
+    this.progressBar.style.width = pct + '%';
+    this.refreshDots(idx);
+    this.current = idx;
+  }
+
+  goTo(idx) {
+    if (idx < 0 || idx >= this.total) return;
+    this.slides[idx].scrollIntoView({ behavior: 'smooth' });
+    this.updateProgress(idx);
+  }
+
+  next() { this.goTo(this.current + 1); }
+  prev() { this.goTo(this.current - 1); }
+
+  /* IntersectionObserver — adds .visible to trigger CSS animations */
+  setupObserver() {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          const idx = this.slides.indexOf(e.target);
+          if (idx !== -1) this.updateProgress(idx);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    this.slides.forEach(s => obs.observe(s));
+  }
+
+  /* Keyboard navigation */
+  setupKeyboard() {
+    document.addEventListener('keydown', e => {
+      if (e.target.getAttribute('contenteditable')) return;
+      if (['ArrowDown','ArrowRight','Space',' ','PageDown'].includes(e.key)) {
+        e.preventDefault(); this.next();
+      } else if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key)) {
+        e.preventDefault(); this.prev();
+      }
+    });
+  }
+
+  /* Touch / swipe */
+  setupTouch() {
+    let startY = 0;
+    document.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const diff = startY - e.changedTouches[0].clientY;
+      if (Math.abs(diff) > 50) { diff > 0 ? this.next() : this.prev(); }
+    }, { passive: true });
+  }
+
+  /* Mouse wheel */
+  setupWheel() {
+    document.addEventListener('wheel', e => {
+      if (this.scrolling) return;
+      this.scrolling = true;
+      e.deltaY > 0 ? this.next() : this.prev();
+      setTimeout(() => { this.scrolling = false; }, 800);
+    }, { passive: true });
+  }
+}
+
+/* ===========================================
+   INLINE EDITOR
+   =========================================== */
+class InlineEditor {
+  constructor() {
+    this.isActive   = false;
+    this.toggle     = document.getElementById('editToggle');
+    this.banner     = document.getElementById('editBanner');
+    this.hotzone    = document.getElementById('editHotzone');
+    this.hideTimer  = null;
+    this.editables  = [];
+
+    this.setupHotzone();
+    this.setupKeyboard();
+    this.setupSave();
+    this.loadSaved();
+  }
+
+  /* Hotzone hover with 400ms grace period */
+  setupHotzone() {
+    const show = () => { clearTimeout(this.hideTimer); this.toggle.classList.add('show'); };
+    const hide = () => {
+      this.hideTimer = setTimeout(() => {
+        if (!this.isActive) this.toggle.classList.remove('show');
+      }, 400);
+    };
+
+    this.hotzone.addEventListener('mouseenter', show);
+    this.hotzone.addEventListener('mouseleave', hide);
+    this.hotzone.addEventListener('click', () => this.toggleEditMode());
+    this.toggle.addEventListener('mouseenter', show);
+    this.toggle.addEventListener('mouseleave', hide);
+    this.toggle.addEventListener('click', () => this.toggleEditMode());
+  }
+
+  setupKeyboard() {
+    document.addEventListener('keydown', e => {
+      if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) {
+        this.toggleEditMode();
+      }
+    });
+  }
+
+  setupSave() {
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key === 's') { e.preventDefault(); this.exportFile(); }
+    });
+  }
+
+  toggleEditMode() {
+    this.isActive = !this.isActive;
+
+    /* Find all editable text nodes */
+    this.editables = Array.from(document.querySelectorAll(
+      'h1,h2,h3,p,li,span.sw-tag,.kicker,.meta,.sw-col-head,.big-thanks'
+    )).filter(el => !el.closest('.sw-footer') && !el.classList.contains('sw-num'));
+
+    if (this.isActive) {
+      document.body.classList.add('edit-active');
+      this.editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+      this.toggle.classList.add('active');
+      this.toggle.textContent = '✓ Done';
+      this.banner.classList.add('active');
+
+      /* Save to localStorage on input */
+      this.editables.forEach(el => {
+        el.addEventListener('input', () => this.saveToLocal());
+      });
+    } else {
+      document.body.classList.remove('edit-active');
+      this.editables.forEach(el => el.removeAttribute('contenteditable'));
+      this.toggle.classList.remove('active');
+      this.toggle.textContent = '✏ Edit';
+      this.banner.classList.remove('active');
+      this.saveToLocal();
+    }
+  }
+
+  saveToLocal() {
+    const data = {};
+    document.querySelectorAll('[data-edit-id]').forEach(el => {
+      data[el.dataset.editId] = el.innerHTML;
+    });
+    localStorage.setItem('kube-slides-edits', JSON.stringify(data));
+  }
+
+  loadSaved() {
+    try {
+      const data = JSON.parse(localStorage.getItem('kube-slides-edits') || '{}');
+      Object.entries(data).forEach(([id, html]) => {
+        const el = document.querySelector(`[data-edit-id="${id}"]`);
+        if (el) el.innerHTML = html;
+      });
+    } catch (_) {}
+  }
+
+  exportFile() {
+    /* Strip edit state before capturing DOM */
+    const editableEls = Array.from(document.querySelectorAll('[contenteditable]'));
+    editableEls.forEach(el => el.removeAttribute('contenteditable'));
+    document.body.classList.remove('edit-active');
+    this.toggle.classList.remove('active', 'show');
+    this.banner.classList.remove('active');
+
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+    /* Restore */
+    document.body.classList.add('edit-active');
+    editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
+    this.toggle.classList.add('active');
+    this.banner.classList.add('active');
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'demystifying-kubernetes.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+}
+
+/* Boot */
+const presentation = new SlidePresentation();
+const editor = new InlineEditor();
+</script>
+</body>
+</html>
