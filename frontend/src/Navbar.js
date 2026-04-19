@@ -18,7 +18,6 @@ export default function Navbar() {
       <div className={`nav-links ${isOpen ? 'active' : ''}`}>
         <Link to="/" onClick={toggleMenu}>Home</Link>
         <Link to="/about" onClick={toggleMenu}>About</Link>
-        <Link to="/contact" onClick={toggleMenu}>Contact</Link>
       </div>
     </nav>
   );
