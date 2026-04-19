@@ -17,6 +17,7 @@ export default function Navbar() {
       </div>
       <div className={`nav-links ${isOpen ? 'active' : ''}`}>
         <Link to="/" onClick={toggleMenu}>Home</Link>
+        <Link to="/map" onClick={toggleMenu}>Map</Link>
         <Link to="/about" onClick={toggleMenu}>About</Link>
       </div>
     </nav>

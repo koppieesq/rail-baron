@@ -16,6 +16,7 @@ ENV REACT_APP_API_URL=$REACT_APP_API_URL
 ENV REACT_APP_FEED_URL=$REACT_APP_FEED_URL
 
 COPY frontend/ ./
+ENV GENERATE_SOURCEMAP=false
 RUN npm run build
 
 # ============================================================
