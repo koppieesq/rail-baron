@@ -63,7 +63,7 @@ function GameMap() {
   }).filter(Boolean);
 
   return (
-    <div style={{ flex: 1, minHeight: 0, width: '100%', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
       <MapContainer
         center={[39.5, -98.5]}
         zoom={4}

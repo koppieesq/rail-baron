@@ -1,34 +1,46 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Navbar from './Navbar';
 import Home from './Home';
 import About from './About';
 import GameMap from './GameMap';
+import { GameProvider, useGame } from './game/GameContext';
+import LoginScreen from './game/LoginScreen';
+import LobbyScreen from './game/LobbyScreen';
+import GameView from './game/GameView';
 
-function AppContent() {
-  const location = useLocation();
-  const isMap = location.pathname === '/map';
+// Decides which game screen to show based on auth + game state.
+function GameRouter() {
+  const { creds, gameId, gameState } = useGame();
 
-  return (
-    <div className={`app${isMap ? ' app--map' : ''}`}>
-      <header className={`app-header${isMap ? ' app-header--map' : ''}`}>
-        <Navbar />
-      </header>
+  if (!creds) return <LoginScreen />;
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/map" element={<GameMap />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<Home />} />
-      </Routes>
-    </div>
-  );
+  // Active or finished game.
+  if (gameId && gameState && (gameState.status === 'active' || gameState.status === 'finished')) {
+    return <GameView />;
+  }
+
+  // Lobby: create/join, or waiting room.
+  return <LobbyScreen />;
 }
 
 function App() {
   return (
     <Router>
-      <AppContent />
+      <GameProvider>
+        <div className="app">
+          <header className="app-header">
+            <Navbar />
+          </header>
+          <Routes>
+            <Route path="/"      element={<Home />} />
+            <Route path="/map"   element={<GameMap />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/play"  element={<GameRouter />} />
+            <Route path="*"      element={<Home />} />
+          </Routes>
+        </div>
+      </GameProvider>
     </Router>
   );
 }
