@@ -11,33 +11,11 @@ body {
 }
 
 .app-header {
-  background-color: #282c34;
-  background-image: url("../public/board.jpg");
-  background-size: cover;
+  background-image: url("../public/header.png");
   display: flex;
   flex-direction: column;
   align-items: center;
   color: white;
-}
-
-/* On the map page the header floats above the map with a glass effect */
-.app--map {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.app-header--map {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-image: none;
-  background-color: rgba(10, 14, 22, 0.45);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  flex-shrink: 0;
 }
 
 .header {
