@@ -1,0 +1,38 @@
+{
+  "regions": {
+    "NE": "NorthEast",
+    "SE": "SouthEast",
+    "NC": "NorthCentral",
+    "SC": "SouthCentral",
+    "PL": "Plains",
+    "NW": "NorthWest",
+    "SW": "SouthWest"
+  },
+  "odd": {
+    "2":  { "roll_region": "NC", "NE": "Pittsburgh",    "SE": "Mobile",       "NC": "St. Louis",    "SC": "Fort Worth",   "PL": "Omaha",                "NW": "Salt Lake City", "SW": "San Diego"        },
+    "3":  { "roll_region": "PL", "NE": "Philadelphia",  "SE": "Tampa",        "NC": "Cincinnati",   "SC": "Louisville",   "PL": "Oklahoma City",        "NW": "Billings",       "SW": "Los Angeles"      },
+    "4":  { "roll_region": "NC", "NE": "Washington DC", "SE": "Charlotte",    "NC": "Cleveland",    "SC": "Shreveport",   "PL": "Fargo",                "NW": "Billings",       "SW": "Tucumcari"        },
+    "5":  { "roll_region": "SE", "NE": "Portland ME",   "SE": "Charleston",   "NC": "St. Louis",    "SC": "Little Rock",  "PL": "Denver",               "NW": "Pocatello",      "SW": "Los Angeles"      },
+    "6":  { "roll_region": "SE", "NE": "Washington DC", "SE": "Mobile",       "NC": "Indianapolis", "SC": "Louisville",   "PL": "Pueblo",               "NW": "Spokane",        "SW": "Sacramento"       },
+    "7":  { "roll_region": "PL", "NE": "Pittsburgh",    "SE": "Knoxville",    "NC": "Cincinnati",   "SC": "San Antonio",  "PL": "Oklahoma City",        "NW": "Portland OR",    "SW": "San Diego"        },
+    "8":  { "roll_region": "SW", "NE": "Boston",        "SE": "Tampa",        "NC": "Detroit",      "SC": "Dallas",       "PL": "Minneapolis/St. Paul", "NW": "Portland OR",    "SW": "Los Angeles"      },
+    "9":  { "roll_region": "NE", "NE": "Boston",        "SE": "Atlanta",      "NC": "Chicago",      "SC": "New Orleans",  "PL": "Kansas City",          "NW": "Seattle",        "SW": "San Fran/Oakland" },
+    "10": { "roll_region": "NE", "NE": "New York",      "SE": "Atlanta",      "NC": "Chicago",      "SC": "Dallas",       "PL": "Kansas City",          "NW": "Seattle",        "SW": "San Fran/Oakland" },
+    "11": { "roll_region": "NE", "NE": "New York",      "SE": "Atlanta",      "NC": "Chicago",      "SC": "Houston",      "PL": "Kansas City",          "NW": "Seattle",        "SW": "San Fran/Oakland" },
+    "12": { "roll_region": "NE", "NE": "Boston",        "SE": "Atlanta",      "NC": "Chicago",      "SC": "Houston",      "PL": "Kansas City",          "NW": "Portland OR",    "SW": "San Fran/Oakland" }
+  },
+  "even": {
+    "2":  { "roll_region": "NC", "NE": "Baltimore",     "SE": "Norfolk",      "NC": "Cleveland",    "SC": "Nashville",    "PL": "Denver",               "NW": "Salt Lake City", "SW": "Phoenix"          },
+    "3":  { "roll_region": "NW", "NE": "Philadelphia",  "SE": "Norfolk",      "NC": "Milwaukee",    "SC": "Nashville",    "PL": "Minneapolis/St. Paul", "NW": "Rapid City",     "SW": "Phoenix"          },
+    "4":  { "roll_region": "NC", "NE": "Baltimore",     "SE": "Chattanooga",  "NC": "Cleveland",    "SC": "Memphis",      "PL": "Denver",               "NW": "Rapid City",     "SW": "Reno"             },
+    "5":  { "roll_region": "SC", "NE": "Albany",        "SE": "Norfolk",      "NC": "St. Louis",    "SC": "Memphis",      "PL": "Denver",               "NW": "Casper",         "SW": "El Paso"          },
+    "6":  { "roll_region": "SC", "NE": "Baltimore",     "SE": "Richmond",     "NC": "Columbus",     "SC": "Fort Worth",   "PL": "Des Moines",           "NW": "Butte",          "SW": "Phoenix"          },
+    "7":  { "roll_region": "NW", "NE": "Buffalo",       "SE": "Jacksonville", "NC": "Milwaukee",    "SC": "Birmingham",   "PL": "Omaha",                "NW": "Salt Lake City", "SW": "Las Vegas"        },
+    "8":  { "roll_region": "SW", "NE": "Philadelphia",  "SE": "Miami",        "NC": "Detroit",      "SC": "New Orleans",  "PL": "Minneapolis/St. Paul", "NW": "Portland OR",    "SW": "Los Angeles"      },
+    "9":  { "roll_region": "NE", "NE": "New York",      "SE": "Miami",        "NC": "Chicago",      "SC": "Nashville",    "PL": "Kansas City",          "NW": "Seattle",        "SW": "San Fran/Oakland" },
+    "10": { "roll_region": "NC", "NE": "New York",      "SE": "Atlanta",      "NC": "Cleveland",    "SC": "Houston",      "PL": "Kansas City",          "NW": "Seattle",        "SW": "San Fran/Oakland" },
+    "11": { "roll_region": "SW", "NE": "New York",      "SE": "Atlanta",      "NC": "Chicago",      "SC": "Houston",      "PL": "Minneapolis/St. Paul", "NW": "Seattle",        "SW": "San Fran/Oakland" },
+    "12": { "roll_region": "NE", "NE": "Philadelphia",  "SE": "Miami",        "NC": "Detroit",      "SC": "Houston",      "PL": "Kansas City",          "NW": "Salt Lake City", "SW": "Los Angeles"      }
+  },
+  "note": "To determine a player's destination: (1) roll one die for parity (odd/even), (2) roll two dice for the row number (2-12), (3) look up the player's home region column. Payoffs are in thousands of dollars, stored in payoffMatrix.json."
+}
