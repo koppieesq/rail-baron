@@ -5,3 +5,21 @@ services:
       - '@database'
       - '@current_user'
       - '@datetime.time'
+
+  rail_baron_game.data_loader:
+    class: Drupal\rail_baron_game\DataLoader
+
+  rail_baron_game.movement_service:
+    class: Drupal\rail_baron_game\Service\MovementService
+    arguments:
+      - '@rail_baron_game.data_loader'
+
+  rail_baron_game.turn_manager:
+    class: Drupal\rail_baron_game\TurnManager
+    arguments:
+      - '@database'
+      - '@rail_baron_game.game_manager'
+      - '@current_user'
+      - '@rail_baron_game.data_loader'
+      - '@rail_baron_game.movement_service'
+      - '@datetime.time'

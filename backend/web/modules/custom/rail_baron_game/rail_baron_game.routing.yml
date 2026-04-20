@@ -3,6 +3,10 @@
 #   - basic_auth module: Authorization: Basic ... header
 #   - simple_oauth module: Authorization: Bearer ... header (preferred for the React SPA)
 
+# ---------------------------------------------------------------------------
+# Game lifecycle (Phase 2)
+# ---------------------------------------------------------------------------
+
 rail_baron_game.create:
   path: '/api/game'
   methods: [POST]
@@ -57,6 +61,50 @@ rail_baron_game.update_player:
   defaults:
     _controller: '\Drupal\rail_baron_game\Controller\PlayerController::update'
     _title: 'Update Player State'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'
+
+# ---------------------------------------------------------------------------
+# Turn actions (Phase 3)
+# ---------------------------------------------------------------------------
+
+rail_baron_game.roll_destination:
+  path: '/api/game/{game_id}/roll-destination'
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\TurnController::rollDestination'
+    _title: 'Roll for Destination'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'
+
+rail_baron_game.valid_moves:
+  path: '/api/game/{game_id}/valid-moves'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\TurnController::validMoves'
+    _title: 'Valid Moves'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'
+
+rail_baron_game.move:
+  path: '/api/game/{game_id}/move'
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\TurnController::executeMove'
+    _title: 'Execute Move'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    game_id: '\d+'
+
+rail_baron_game.purchase:
+  path: '/api/game/{game_id}/purchase'
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\TurnController::executePurchase'
+    _title: 'Purchase Railroad or Train Upgrade'
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'

@@ -7,7 +7,8 @@
       "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron log --all -p --follow -- \"*.env\" \"*.php\" \"docker-compose*\" \"*.yaml\" \"*.yml\" \"*.key\" \"*.pem\")",
       "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron ls-files)",
       "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron log --all -p -- \"settings.php\")",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(curl:*)"
     ]
   }
 }
