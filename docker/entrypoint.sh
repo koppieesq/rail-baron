@@ -12,6 +12,13 @@ CONFIG_DIR="/var/www/html/backend/config"
 # "import is empty" error. Once config is exported and committed, this runs
 # automatically on every deploy.
 if [ -n "$(ls -A $CONFIG_DIR 2>/dev/null)" ]; then
+  # Sync the site UUID from exported config so cim doesn't reject it.
+  EXPORTED_UUID=$(grep "^uuid:" "$CONFIG_DIR/system.site.yml" 2>/dev/null | awk '{print $2}')
+  if [ -n "$EXPORTED_UUID" ]; then
+    echo "[entrypoint] Setting site UUID to match exported config: $EXPORTED_UUID"
+    $DRUSH config-set "system.site" uuid "$EXPORTED_UUID" -y --no-interaction
+  fi
+
   echo "[entrypoint] Importing Drupal configuration..."
   $DRUSH cim --source="$CONFIG_DIR" -y --no-interaction
 else
