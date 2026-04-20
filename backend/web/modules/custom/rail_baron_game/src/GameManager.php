@@ -189,6 +189,8 @@ class GameManager {
       throw new \RuntimeException('Game not found.');
     }
     $game['players'] = $this->getPlayers($gameId);
+    // Let the frontend know which player they are without a separate whoami call.
+    $game['current_uid'] = (int) $this->currentUser->id();
     return $game;
   }
 

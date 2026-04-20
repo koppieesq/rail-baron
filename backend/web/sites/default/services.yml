@@ -220,8 +220,10 @@ parameters:
     exposedHeaders: false
     # Sets the Access-Control-Max-Age header.
     maxAge: false
-    # Sets the Access-Control-Allow-Credentials header.
-    supportsCredentials: true
+    # Must be false when allowedOrigins is ['*'] — browsers reject the
+    # combination of Allow-Credentials:true + Allow-Origin:* per CORS spec.
+    # We use Authorization headers (Basic auth), not cookies, so this is fine.
+    supportsCredentials: false
 
   queue.config:
     # The maximum number of seconds to wait if a queue is temporarily suspended.
