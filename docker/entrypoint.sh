@@ -13,7 +13,7 @@ CONFIG_DIR="/var/www/html/backend/config"
 # automatically on every deploy.
 if [ -n "$(ls -A $CONFIG_DIR 2>/dev/null)" ]; then
   echo "[entrypoint] Importing Drupal configuration..."
-  $DRUSH cim -y --no-interaction
+  $DRUSH cim --source="$CONFIG_DIR" -y --no-interaction
 else
   echo "[entrypoint] Config sync directory is empty — skipping cim."
 fi
