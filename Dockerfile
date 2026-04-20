@@ -6,7 +6,7 @@ FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --prefer-offline
+RUN npm ci --prefer-offline --legacy-peer-deps
 
 # REACT_APP_* vars are baked in at build time by CRA.
 # Pass them via --build-arg when building the image.
