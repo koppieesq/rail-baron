@@ -83,4 +83,4 @@ RUN chmod +x /entrypoint.sh
 # Drupal on 80, React on 3000
 EXPOSE 80 3000
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/app.conf"]

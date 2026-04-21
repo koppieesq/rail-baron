@@ -1,9 +1,8 @@
 #!/bin/bash
 set -e
 
-# Tee all output to a log file so it can be inspected after startup:
-#   kubectl exec <pod> -- cat /var/log/drupal-init.log
-exec > >(tee /var/log/drupal-init.log) 2>&1
+# Drupal initialization — run once at startup via supervisord (program:drupal-init).
+# Output is captured by supervisord and streamed to kubectl logs automatically.
 
 # Ensure Drupal's files directory is writable
 chown -R www-data:www-data /var/www/html/backend/web/sites/default/files 2>/dev/null || true
@@ -19,20 +18,20 @@ if [ -n "$(ls -A $CONFIG_DIR 2>/dev/null)" ]; then
   # Sync the site UUID from exported config so cim doesn't reject it.
   EXPORTED_UUID=$(grep "^uuid:" "$CONFIG_DIR/system.site.yml" 2>/dev/null | awk '{print $2}')
   if [ -n "$EXPORTED_UUID" ]; then
-    echo "[entrypoint] Setting site UUID to match exported config: $EXPORTED_UUID"
+    echo "[drupal-init] Setting site UUID to match exported config: $EXPORTED_UUID"
     $DRUSH config-set "system.site" uuid "$EXPORTED_UUID" -y --no-interaction
   fi
 
-  echo "[entrypoint] Importing Drupal configuration..."
+  echo "[drupal-init] Importing Drupal configuration..."
   $DRUSH cim --source="$CONFIG_DIR" -y --no-interaction
 else
-  echo "[entrypoint] Config sync directory is empty — skipping cim."
+  echo "[drupal-init] Config sync directory is empty — skipping cim."
 fi
 
-echo "[entrypoint] Running database updates..."
+echo "[drupal-init] Running database updates..."
 $DRUSH updb -y --no-interaction
 
-echo "[entrypoint] Clearing caches..."
+echo "[drupal-init] Clearing caches..."
 $DRUSH cr
 
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/app.conf
+echo "[drupal-init] Done."
