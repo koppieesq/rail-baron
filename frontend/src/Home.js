@@ -27,11 +27,16 @@ function Home() {
         Play Now
       </button>
 
-      <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '2rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
+        <img
+          src={`${process.env.PUBLIC_URL}/railbaron.png`}
+          alt="The Rail Baron"
+          style={{ width: '180px', flexShrink: 0 }}
+        />
         <img
           src={`${process.env.PUBLIC_URL}/board2.jpg`}
           alt="Rail Baron game board"
-          style={{ maxWidth: '100%', width: '800px', borderRadius: '6px', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
+          style={{ maxWidth: '100%', width: '700px', borderRadius: '6px', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
         />
       </div>
 
