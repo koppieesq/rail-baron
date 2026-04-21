@@ -50,4 +50,9 @@ We will use something similar to **trunk based development,** which means featur
 1. Ask someone for a code review
 1. **Wait until the PR is approved**
 1. Merge the PR
-1. GitHub Actions will automatically grab the code and deploy both frontend and backend.  The process takes about 90 seconds.
+
+Once merged, deploy the changes:
+
+1. Run the build script: `sh build.sh`
+1. Push to Kubernetes: `kubectl apply -f k8s/`
+1. An automated script will run the deploy steps on the pod
