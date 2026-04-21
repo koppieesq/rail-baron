@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Tee all output to a log file so it can be inspected after startup:
+#   kubectl exec <pod> -- cat /var/log/drupal-init.log
+exec > >(tee /var/log/drupal-init.log) 2>&1
+
 # Ensure Drupal's files directory is writable
 chown -R www-data:www-data /var/www/html/backend/web/sites/default/files 2>/dev/null || true
 
