@@ -132,9 +132,8 @@ function rail_baron_game_schema(): array {
       'owned_railroads' => [
         'type' => 'text',
         'size' => 'medium',
-        'not null' => TRUE,
-        'default' => '[]',
-        'description' => 'JSON array of railroad abbreviations the player owns.',
+        'not null' => FALSE,
+        'description' => 'JSON array of railroad abbreviations the player owns. NULL treated as empty array.',
       ],
       'turn_order' => [
         'type' => 'int',
