@@ -36,6 +36,7 @@ class GameController extends ControllerBase {
       return new JsonResponse(['error' => $e->getMessage()], 400);
     }
     catch (\Throwable $e) {
+      $this->logger('rail_baron_game')->error('createGame failed: @msg', ['@msg' => $e->getMessage(), 'exception' => $e]);
       return new JsonResponse(['error' => 'Failed to create game.'], 500);
     }
   }
