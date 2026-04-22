@@ -130,7 +130,7 @@ export default function GameMapView({ validMoves = [], validMovesRoll }) {
           fillOpacity={0.9}
         >
           <Tooltip direction="top" offset={[0, -10]} permanent={false}>
-            {p.uid === myUid ? 'You' : `Player ${p.turn_order + 1}`} — {p.cityName}
+            {p.uid === myUid ? 'You' : (p.username ?? `Player ${p.turn_order + 1}`)} — {p.cityName}
           </Tooltip>
         </CircleMarker>
       ))}

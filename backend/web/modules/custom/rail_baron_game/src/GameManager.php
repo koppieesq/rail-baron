@@ -21,8 +21,8 @@ class GameManager {
    * Creates a new game and auto-joins the creating user.
    */
   public function createGame(int $maxPlayers = 4): array {
-    if ($maxPlayers < 2 || $maxPlayers > 6) {
-      throw new \InvalidArgumentException('max_players must be between 2 and 6.');
+    if ($maxPlayers < 1 || $maxPlayers > 6) {
+      throw new \InvalidArgumentException('max_players must be between 1 and 6.');
     }
 
     $joinCode = $this->generateJoinCode();
@@ -99,9 +99,6 @@ class GameManager {
     }
 
     $players = $this->getPlayers($gameId);
-    if (count($players) < 2) {
-      throw new \RuntimeException('Need at least 2 players to start.');
-    }
 
     // Only the first-joined player (turn_order = 0) can start.
     $creator = $players[0];
@@ -225,12 +222,13 @@ class GameManager {
   }
 
   private function getPlayers(int $gameId): array {
-    $rows = $this->database->select('rail_baron_player_state', 'ps')
-      ->fields('ps')
-      ->condition('game_id', $gameId)
-      ->orderBy('turn_order')
-      ->execute()
-      ->fetchAllAssoc('id', \PDO::FETCH_ASSOC);
+    $query = $this->database->select('rail_baron_player_state', 'ps');
+    $query->join('users_field_data', 'u', 'u.uid = ps.uid');
+    $query->fields('ps');
+    $query->addField('u', 'name', 'username');
+    $query->condition('ps.game_id', $gameId);
+    $query->orderBy('ps.turn_order');
+    $rows = $query->execute()->fetchAllAssoc('id', \PDO::FETCH_ASSOC);
 
     foreach ($rows as &$row) {
       $row['owned_railroads'] = json_decode($row['owned_railroads'] ?? '[]', TRUE);

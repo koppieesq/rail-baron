@@ -77,7 +77,7 @@ export function GameProvider({ children }) {
     const found = await api.findGame(creds, joinCode.trim().toUpperCase());
     const foundState = found.data ?? found;
     const id = parseInt(foundState.id, 10);
-    const joined = await api.joinGame(creds, id);
+    const joined = await api.joinGame(creds, id, joinCode.trim().toUpperCase());
     const state = joined.data ?? joined;
     setGameId(id);
     setGameState(state);

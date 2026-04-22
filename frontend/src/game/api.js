@@ -44,8 +44,8 @@ export const api = {
   getState: (creds, gameId) =>
     apiFetch(`/api/game/${gameId}/state`, {}, creds),
 
-  joinGame: (creds, gameId) =>
-    apiFetch(`/api/game/${gameId}/join`, { method: 'POST' }, creds),
+  joinGame: (creds, gameId, joinCode) =>
+    apiFetch(`/api/game/${gameId}/join`, { method: 'POST', body: JSON.stringify({ join_code: joinCode }) }, creds),
 
   startGame: (creds, gameId) =>
     apiFetch(`/api/game/${gameId}/start`, { method: 'POST' }, creds),

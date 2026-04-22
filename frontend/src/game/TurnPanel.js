@@ -165,11 +165,11 @@ export default function TurnPanel({ onValidMoves, onClearMoves }) {
   if (!gameState) return null;
   if (gameState.status === 'finished') {
     const winner = gameState.players?.find(p => p.uid === gameState.current_turn_uid);
-    return <GameOver winner={winner ? `Player ${winner.turn_order + 1}` : 'Someone'} />;
+    return <GameOver winner={winner ? (winner.username ?? `Player ${winner.turn_order + 1}`) : 'Someone'} />;
   }
   if (!isMyTurn) {
     const active = gameState.players?.find(p => p.uid === gameState.current_turn_uid);
-    const label  = active ? `Player ${active.turn_order + 1}` : 'another player';
+    const label  = active ? (active.username ?? `Player ${active.turn_order + 1}`) : 'another player';
     return <NotYourTurn currentPlayerLabel={label} />;
   }
 
