@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 58">
+  <!-- Platform base (ground level) -->
+  <rect x="2" y="50" width="68" height="7" rx="2" fill="#c8a464"/>
+
+  <!-- Building body -->
+  <rect x="14" y="22" width="44" height="32" fill="#d4b882"/>
+
+  <!-- Windows -->
+  <rect x="18" y="28" width="9" height="9" rx="1" fill="#88bbdd"/>
+  <rect x="45" y="28" width="9" height="9" rx="1" fill="#88bbdd"/>
+
+  <!-- Door (arched top) -->
+  <rect x="29" y="36" width="14" height="16" rx="1" fill="#8B5E30"/>
+  <path d="M29,36 Q36,28 43,36" fill="#7a4e20"/>
+
+  <!-- Chimney -->
+  <rect x="49" y="8" width="7" height="18" fill="#b86030"/>
+  <rect x="47" y="6" width="11" height="5" rx="1" fill="#a85020"/>
+  <!-- Chimney smoke -->
+  <circle cx="53" cy="3" r="3.5" fill="#aaa" opacity="0.6"/>
+  <circle cx="58" cy="1" r="2.5" fill="#aaa" opacity="0.4"/>
+
+  <!-- Main roof (wide triangle, strongly overhanging — key feature) -->
+  <polygon points="2,24 36,4 70,24" fill="#8B3028"/>
+
+  <!-- Platform canopy roof (overhang over platform) -->
+  <rect x="1" y="42" width="70" height="7" rx="2" fill="#8B3028"/>
+
+  <!-- Canopy support posts -->
+  <rect x="7" y="42" width="3" height="12" fill="#7a2820"/>
+  <rect x="34" y="42" width="3" height="12" fill="#7a2820"/>
+  <rect x="62" y="42" width="3" height="12" fill="#7a2820"/>
+
+  <!-- Station name sign -->
+  <rect x="20" y="12" width="32" height="9" rx="1" fill="#f5e8c0"/>
+  <line x1="24" y1="17" x2="48" y2="17" stroke="#c8a030" stroke-width="1.5"/>
+  <line x1="24" y1="15" x2="48" y2="15" stroke="#c8a030" stroke-width="1" opacity="0.5"/>
+</svg>
