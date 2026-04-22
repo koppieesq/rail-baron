@@ -4,11 +4,12 @@
  * Shows all route segments, city markers, player tokens, and optionally
  * highlights valid move targets when the active player is picking a city.
  */
-import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Marker, Polyline, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import cities from '../data/cities.json';
 import routeSegmentsRaw from '../data/routeSegments.json';
 import { useGame } from './GameContext';
+import { locomotiveIcon, waterTowerIcon, depotIcon } from './mapIcons';
 
 const routeSegments = routeSegmentsRaw.filter(s => s.city_a);
 const cityByName    = Object.fromEntries(cities.map(c => [c.name, c]));
@@ -55,12 +56,32 @@ export default function GameMapView({ validMoves = [], validMovesRoll }) {
   // Valid-move targets as a Set for quick lookup.
   const validSet = new Set(validMoves.map(m => m.city));
 
-  // Player token positions.
-  const playerTokens = (gameState?.players ?? []).map(p => {
-    const city = cityById[p.current_city_id];
-    if (!city) return null;
-    return { ...p, lat: city.lat, lng: city.lng, cityName: city.name };
-  }).filter(Boolean);
+  // Per-player map markers: locomotive (current), depot (origin), water tower (destination).
+  const playerMarkers = (gameState?.players ?? []).flatMap(p => {
+    const color   = playerColors[p.uid] ?? '#999';
+    const name    = p.username ?? `Player ${p.turn_order + 1}`;
+    const markers = [];
+
+    const currentCity = cityById[p.current_city_id];
+    if (currentCity) {
+      markers.push({ key: `loco-${p.uid}`, lat: currentCity.lat, lng: currentCity.lng,
+        icon: locomotiveIcon(color), label: `${p.uid === myUid ? 'You' : name} — ${currentCity.name}` });
+    }
+
+    const originCity = cityById[p.origin_city_id];
+    if (originCity && p.origin_city_id !== 0) {
+      markers.push({ key: `depot-${p.uid}`, lat: originCity.lat + 0.3, lng: originCity.lng - 0.8,
+        icon: depotIcon(color), label: `${name}'s origin — ${originCity.name}` });
+    }
+
+    const destCity = cityById[p.destination_city_id];
+    if (destCity && p.destination_city_id !== 0) {
+      markers.push({ key: `dest-${p.uid}`, lat: destCity.lat + 0.3, lng: destCity.lng + 0.8,
+        icon: waterTowerIcon(color), label: `${name}'s destination — ${destCity.name}` });
+    }
+
+    return markers;
+  });
 
   return (
     <MapContainer
@@ -118,21 +139,11 @@ export default function GameMapView({ validMoves = [], validMovesRoll }) {
         );
       })}
 
-      {/* Player tokens (rendered on top) */}
-      {playerTokens.map(p => (
-        <CircleMarker
-          key={`token-${p.uid}`}
-          center={[p.lat + 0.4, p.lng + 0.4]} // slight offset so tokens don't hide city marker
-          radius={10}
-          color="#fff"
-          weight={2}
-          fillColor={playerColors[p.uid] ?? '#999'}
-          fillOpacity={0.9}
-        >
-          <Tooltip direction="top" offset={[0, -10]} permanent={false}>
-            {p.uid === myUid ? 'You' : (p.username ?? `Player ${p.turn_order + 1}`)} — {p.cityName}
-          </Tooltip>
-        </CircleMarker>
+      {/* Player markers: locomotive (current city), depot (origin), water tower (destination) */}
+      {playerMarkers.map(m => (
+        <Marker key={m.key} position={[m.lat, m.lng]} icon={m.icon}>
+          <Tooltip direction="top">{m.label}</Tooltip>
+        </Marker>
       ))}
     </MapContainer>
   );
