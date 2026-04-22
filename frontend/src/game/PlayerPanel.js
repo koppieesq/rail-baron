@@ -26,7 +26,7 @@ function PlayerCard({ player, isSelf, isActive, color }) {
       <div className="rb-player-card-header">
         <span className="rb-player-dot" style={{ background: color }} />
         <span className="rb-player-name">
-          {isSelf ? 'You' : `Player ${player.turn_order + 1}`}
+          {isSelf ? 'You' : (player.username ?? `Player ${player.turn_order + 1}`)}
         </span>
         {isActive && <span className="rb-turn-badge">Turn</span>}
       </div>

@@ -10,7 +10,7 @@ function WaitingRoom({ state }) {
 
   const creator = state.players?.[0];
   const isCreator = creator?.uid === myUid;
-  const canStart  = state.players?.length >= 2;
+  const canStart  = state.players?.length >= 1;
 
   const handleStart = async () => {
     setStarting(true);
@@ -31,7 +31,7 @@ function WaitingRoom({ state }) {
           {state.players?.map((p, i) => (
             <li key={p.uid} className="rb-player-list-item">
               <span className="rb-player-dot" style={{ background: ['#1e88e5','#e53935','#43a047','#fb8c00','#8e24aa','#00acc1'][i] }} />
-              Player {i + 1}
+              {p.username ?? `Player ${i + 1}`}
               {p.uid === myUid ? ' (you)' : ''}
               {i === 0 ? ' — host' : ''}
             </li>
@@ -47,7 +47,7 @@ function WaitingRoom({ state }) {
               onClick={handleStart}
               disabled={starting || !canStart}
             >
-              {starting ? 'Starting…' : canStart ? 'Start Game' : 'Need 2+ players'}
+              {starting ? 'Starting…' : 'Start Game'}
             </button>
           )}
           {!isCreator && <p className="rb-muted">Waiting for the host to start…</p>}
@@ -104,7 +104,7 @@ export default function LobbyScreen() {
             <label className="rb-label">
               Max Players
               <select className="rb-input" value={maxPlayers} onChange={e => setMax(+e.target.value)}>
-                {[2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
+                {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </label>
             {error && <p className="rb-error">{error}</p>}
