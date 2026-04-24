@@ -48,12 +48,12 @@ class TurnManager {
       throw new \RuntimeException('You already have a destination assigned.');
     }
 
-    $homeCity = $this->dataLoader->getCityById((int) $player['home_city_id']);
-    if (!$homeCity) {
+    if ((int) $player['home_city_id'] === 0) {
       throw new \RuntimeException('Home city not set — has the game started?');
     }
 
-    $roll    = $this->doDestinationRoll($homeCity['region']);
+    $currentCity = $this->dataLoader->getCityById((int) $player['current_city_id']);
+    $roll    = $this->doDestinationRoll($currentCity ? $currentCity['region'] : NULL);
     $destId  = $roll['destination_city_id'];
     $originId = (int) $player['origin_city_id'] ?: (int) $player['current_city_id'];
 
@@ -257,34 +257,44 @@ class TurnManager {
     throw new \RuntimeException('You are not a player in this game.');
   }
 
-  private function doDestinationRoll(string $homeRegion): array {
-    $parityDie = random_int(1, 6);
-    $die1      = random_int(1, 6);
-    $die2      = random_int(1, 6);
-    $sum       = $die1 + $die2;
-    $parity    = ($parityDie % 2 === 0) ? 'even' : 'odd';
-
+  private function doDestinationRoll(?string $currentRegion): array {
     $table = $this->dataLoader->getDestinationTable();
-    $row   = $table[$parity][(string) $sum] ?? NULL;
 
-    if (!$row || !isset($row[$homeRegion])) {
-      throw new \RuntimeException(
-        "No destination entry for region={$homeRegion}, parity={$parity}, sum={$sum}."
-      );
+    for ($attempt = 0; $attempt < 20; $attempt++) {
+      $parityDie = random_int(1, 6);
+      $die1      = random_int(1, 6);
+      $die2      = random_int(1, 6);
+      $sum       = $die1 + $die2;
+      $parity    = ($parityDie % 2 === 0) ? 'even' : 'odd';
+
+      $row = $table[$parity][(string) $sum] ?? NULL;
+      if (!$row) continue;
+
+      // Use the row's designated region (roll_region) as the destination column.
+      $targetRegion = $row['roll_region'];
+      $destName     = $row[$targetRegion] ?? NULL;
+      if (!$destName) continue;
+
+      $city = $this->dataLoader->getCityByName($destName);
+      if (!$city) continue;
+
+      // Re-roll if the destination is in the same region as where the player is.
+      if ($currentRegion !== NULL && $city['region'] === $currentRegion) {
+        continue;
+      }
+
+      return [
+        'parity_die'          => $parityDie,
+        'die1'                => $die1,
+        'die2'                => $die2,
+        'sum'                 => $sum,
+        'parity'              => $parity,
+        'destination_name'    => $destName,
+        'destination_city_id' => (int) $city['id'],
+      ];
     }
 
-    $destName = $row[$homeRegion];
-    $city     = $this->dataLoader->getCityByName($destName);
-
-    return [
-      'parity_die'          => $parityDie,
-      'die1'                => $die1,
-      'die2'                => $die2,
-      'sum'                 => $sum,
-      'parity'              => $parity,
-      'destination_name'    => $destName,
-      'destination_city_id' => $city ? (int) $city['id'] : 0,
-    ];
+    throw new \RuntimeException('Could not determine a valid destination after multiple attempts.');
   }
 
   /**
