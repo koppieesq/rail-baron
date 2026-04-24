@@ -34,7 +34,11 @@ export default function GameView() {
       <aside className="rb-game-side">
         <div className="rb-game-side-header">
           <span className="rb-game-code">#{gameState.join_code}</span>
-          <button className="rb-btn rb-btn--ghost rb-btn--sm" onClick={leaveGame}>← Lobby</button>
+          <button
+            className="rb-btn rb-btn--exit rb-btn--sm"
+            onClick={leaveGame}
+            title="You will leave the game permanently and cannot rejoin"
+          >Exit Game</button>
         </div>
 
         <div className="rb-tab-row">

@@ -155,6 +155,9 @@
 .rb-btn--ghost { background: transparent; color: #7a9bc4; border: 1px solid #2a3f5e; }
 .rb-btn--ghost:hover:not(:disabled) { background: #1a2535; }
 
+.rb-btn--exit { background: transparent; color: #a78bfa; border: 1px solid #5b21b6; }
+.rb-btn--exit:hover:not(:disabled) { background: #2d1b69; }
+
 .rb-btn--sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 
 .rb-btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
@@ -466,5 +469,5 @@
 
 /* ---- Utilities ----------------------------------------------------- */
 
-.rb-error  { color: #ef5350; font-size: 0.85rem; margin: 0.25rem 0; }
+.rb-error  { color: #c084fc; font-size: 0.85rem; margin: 0.25rem 0; }
 .rb-muted  { color: #7a9bc4; font-size: 0.85rem; margin: 0.25rem 0; }

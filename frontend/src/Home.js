@@ -17,7 +17,7 @@ function Home() {
           padding: '0.75rem 2.5rem',
           marginBottom: '2.5rem',
           cursor: 'pointer',
-          backgroundColor: '#8B0000',
+          backgroundColor: '#0000cc',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
