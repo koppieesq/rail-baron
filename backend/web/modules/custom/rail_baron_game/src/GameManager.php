@@ -186,8 +186,11 @@ class GameManager {
       throw new \RuntimeException('Game not found.');
     }
     $game['players'] = $this->getPlayers($gameId);
-    // Let the frontend know which player they are without a separate whoami call.
     $game['current_uid'] = (int) $this->currentUser->id();
+    // Cast numeric game fields so JSON strict-equality works in React.
+    foreach (['id', 'current_turn_uid', 'max_players', 'created', 'updated'] as $f) {
+      if (isset($game[$f])) $game[$f] = (int) $game[$f];
+    }
     return $game;
   }
 

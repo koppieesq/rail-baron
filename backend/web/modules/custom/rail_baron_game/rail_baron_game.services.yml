@@ -24,6 +24,10 @@ services:
       - '@rail_baron_game.movement_service'
       - '@datetime.time'
 
+  logger.channel.rail_baron_game:
+    parent: logger.channel_base
+    arguments: ['rail_baron_game']
+
   rail_baron_game.ws_notifier:
     class: Drupal\rail_baron_game\WebSocketNotifier
     arguments:
