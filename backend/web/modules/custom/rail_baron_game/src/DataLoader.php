@@ -85,7 +85,7 @@ class DataLoader {
    * Values in the matrix are stored in thousands.
    */
   public function getPayoff(int $originId, int $destId): int {
-    $matrix = $this->getPayoffMatrix();
+    $matrix = $this->getPayoffMatrix()['payoffs'] ?? [];
     $value = $matrix[(string) $originId][(string) $destId]
       ?? $matrix[(string) $destId][(string) $originId]
       ?? 0;
