@@ -44,9 +44,11 @@ export default function GameView() {
         </div>
 
         <div className="rb-game-side-body">
-          {sideTab === 'turn'    && <TurnPanel onValidMoves={handleValidMoves} onClearMoves={handleClearMoves} />}
-          {sideTab === 'players' && <PlayerPanel />}
-          {sideTab === 'log'     && <GameLog />}
+          <div style={{ display: sideTab === 'turn'    ? undefined : 'none' }}>
+            <TurnPanel onValidMoves={handleValidMoves} onClearMoves={handleClearMoves} />
+          </div>
+          <div style={{ display: sideTab === 'players' ? undefined : 'none' }}><PlayerPanel /></div>
+          <div style={{ display: sideTab === 'log'     ? undefined : 'none' }}><GameLog /></div>
         </div>
       </aside>
     </div>
