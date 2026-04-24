@@ -5,11 +5,14 @@ import { useGame } from './GameContext';
 
 const cityById = Object.fromEntries(cities.map(c => [c.id, c]));
 
-// Roll 2d6 and return { die1, die2, total }.
-function rollDice() {
+// Roll a pool of dice and keep the best two.
+// standard: 2d6, express: 3d6 keep best 2, superchief: 4d6 keep best 2.
+function rollDice(trainType = 'standard') {
   const d = () => Math.floor(Math.random() * 6) + 1;
-  const die1 = d(), die2 = d();
-  return { die1, die2, total: die1 + die2 };
+  const poolSize = trainType === 'superchief' ? 4 : trainType === 'express' ? 3 : 2;
+  const pool = Array.from({ length: poolSize }, d).sort((a, b) => b - a);
+  const [die1, die2] = pool;
+  return { die1, die2, total: die1 + die2, pool };
 }
 
 // ---- Sub-panels ----------------------------------------------------------
@@ -183,7 +186,7 @@ export default function TurnPanel({ onValidMoves, onClearMoves }) {
   });
 
   const handleRollMove = () => run(async () => {
-    const roll = rollDice();
+    const roll = rollDice(myPlayer?.train_type);
     setMoveRoll(roll);
     const moves = await getValidMoves(roll.total);
     setValidMoves(moves.valid_moves ?? []);
@@ -252,6 +255,9 @@ export default function TurnPanel({ onValidMoves, onClearMoves }) {
           {moveRoll && (
             <div className="rb-dice-result">
               🎲 {moveRoll.die1} + {moveRoll.die2} = <strong>{moveRoll.total}</strong>
+              {moveRoll.pool?.length > 2 && (
+                <span className="rb-muted"> (dropped: {moveRoll.pool.slice(2).join(', ')})</span>
+              )}
             </div>
           )}
         </div>
@@ -272,7 +278,13 @@ export default function TurnPanel({ onValidMoves, onClearMoves }) {
       {/* STEP 3b: Pick a city */}
       {phase === 'pick_city' && validMoves.length > 0 && (
         <div className="rb-turn-step">
-          <p>🎲 You rolled <strong>{moveRoll?.total}</strong>. Pick a destination:</p>
+          <div className="rb-dice-result">
+            🎲 {moveRoll?.die1} + {moveRoll?.die2} = <strong>{moveRoll?.total}</strong>
+            {moveRoll?.pool?.length > 2 && (
+              <span className="rb-muted"> (dropped: {moveRoll.pool.slice(2).join(', ')})</span>
+            )}
+          </div>
+          <p>Pick a destination:</p>
           <ul className="rb-move-list">
             {validMoves.map(m => (
               <li key={m.city}>

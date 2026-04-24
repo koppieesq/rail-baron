@@ -304,6 +304,7 @@ p.lead {
   font-size: var(--mono-size); line-height: 1.65;
   border-left: 4px solid var(--red);
   max-height: min(45vh, 360px); overflow: hidden;
+  white-space: pre;
 }
 .sw-code .comment { color: #6a6a6a; }
 .sw-code .keyword { color: #ff9966; }
@@ -563,8 +564,8 @@ body.edit-active [contenteditable] {
           <div class="sw-col-head">Use an existing one</div>
           <ul class="sw-bullets">
             <li><span>Official <code>drupal</code> image on Docker Hub</span></li>
-            <li><span>Wodby's <code>drupal-php</code> — battle-tested</span></li>
-            <li><span>Fast to start, less control</span></li>
+            <li><span>Geerlingguy's Drupal for Kubernetes</span></li>
+            <li><span>Steep learning curve</span></li>
           </ul>
         </div>
         <div>
@@ -598,23 +599,13 @@ body.edit-active [contenteditable] {
       <h2 class="reveal">Anatomy of a Drupal Dockerfile</h2>
       <div class="red-rule"></div>
       <div class="sw-code reveal">
-<span class="comment"># Start from official PHP-FPM Alpine (small &amp; fast)</span>
-<span class="keyword">FROM</span> <span class="string">php:8.3-fpm-alpine</span>
-
-<span class="comment"># Install Drupal's required PHP extensions</span>
-<span class="keyword">RUN</span> docker-php-ext-install pdo pdo_mysql opcache
-
-<span class="comment"># Install Composer</span>
-<span class="keyword">COPY</span> --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-<span class="comment"># Copy your Drupal codebase in</span>
-<span class="keyword">COPY</span> . /var/www/html
-
-<span class="comment"># Set working directory</span>
-<span class="keyword">WORKDIR</span> /var/www/html
-
-<span class="comment"># Expose PHP-FPM port</span>
-<span class="keyword">EXPOSE</span> 9000</div>
+      <span class="keyword">FROM</span> <span class="string">php:8.3-fpm-alpine</span>
+      <span class="keyword">RUN</span> docker-php-ext-install pdo pdo_mysql opcache
+      <span class="keyword">COPY</span> --from=composer:latest /usr/bin/composer /usr/bin/composer
+      <span class="keyword">COPY</span> . /var/www/html
+      <span class="keyword">WORKDIR</span> /var/www/html
+      <span class="keyword">EXPOSE</span> 9000
+      <span class="keyword">ENTRYPOINT</span> ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/app.conf"]</div>
     </div>
   </div>
   <div class="sw-footer">
@@ -639,7 +630,7 @@ body.edit-active [contenteditable] {
         <li class="reveal"><span><strong>Base image</strong> — <code>php:8.3-fpm-alpine</code> is small and fast; <code>-bookworm</code> has more system libs available</span></li>
         <li class="reveal"><span><strong>PHP extensions</strong> — Drupal needs <code>pdo_mysql</code>, <code>gd</code>, <code>opcache</code>, <code>apcu</code>; add more for your modules</span></li>
         <li class="reveal"><span><strong>Nginx vs Apache</strong> — run as a sidecar container, or bake Nginx in with a custom entrypoint</span></li>
-        <li class="reveal"><span><strong>Build vs runtime</strong> — run Composer during build (good for prod), or mount vendor/ as a volume (good for local dev)</span></li>
+        <li class="reveal"><span><strong>Build vs runtime</strong> — run Composer during build (good for prod)</span></li>
         <li class="reveal"><span><strong>Non-root user</strong> — always run the app as a non-root user in production</span></li>
       </ul>
     </div>
@@ -666,10 +657,10 @@ body.edit-active [contenteditable] {
         <div>
           <div class="sw-col-head reveal">Local cluster options</div>
           <ul class="sw-bullets">
+            <li class="reveal"><span><strong>Docker Desktop</strong> — one-click enable, great for getting started</span></li>
             <li class="reveal"><span><strong>minikube</strong> — classic, full-featured, runs a VM</span></li>
             <li class="reveal"><span><strong>kind</strong> — Kubernetes in Docker, no VM needed</span></li>
             <li class="reveal"><span><strong>k3d</strong> — lightweight k3s in Docker, very fast</span></li>
-            <li class="reveal"><span><strong>Docker Desktop</strong> — one-click enable, great for getting started</span></li>
           </ul>
         </div>
         <div>
