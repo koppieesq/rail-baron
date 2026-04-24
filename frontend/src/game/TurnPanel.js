@@ -207,6 +207,10 @@ export default function TurnPanel({ onValidMoves, onClearMoves }) {
   const handleEndTurn = () => run(async () => {
     await endTurn();
     setPhase('init');
+    setDestRoll(null);
+    setMoveRoll(null);
+    setMoveSummary(null);
+    setValidMoves([]);
     onClearMoves();
   });
 
@@ -284,6 +288,9 @@ export default function TurnPanel({ onValidMoves, onClearMoves }) {
               </li>
             ))}
           </ul>
+          <button className="rb-btn rb-btn--ghost rb-mt" onClick={handleEndTurn} disabled={busy}>
+            Stay &amp; End Turn
+          </button>
         </div>
       )}
 
