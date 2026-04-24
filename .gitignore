@@ -10,3 +10,4 @@ settings.ddev.php
 secure
 *.sql
 *.sql.gz
+node_modules

@@ -1,0 +1,12 @@
+{
+  "name": "rail-baron-ws-server",
+  "version": "1.0.0",
+  "description": "WebSocket relay server — receives notify pings from Drupal, broadcasts refresh signals to game room clients.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.17.0"
+  }
+}
