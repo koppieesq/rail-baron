@@ -21,7 +21,7 @@ web_extra_exposed_ports:
     https_port: 3000
 web_extra_daemons:
   - name: "frontend"
-    command: "npm install && npm start"
+    command: "npm install --legacy-peer-deps && npm start"
     directory: /var/www/html/frontend
   - name: "ws-server"
     command: "npm install && node server.js"
