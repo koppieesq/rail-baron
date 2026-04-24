@@ -23,6 +23,9 @@ web_extra_daemons:
   - name: "frontend"
     command: "npm install && npm start"
     directory: /var/www/html/frontend
+  - name: "ws-server"
+    command: "npm install && node server.js"
+    directory: /var/www/html/ws-server
 
 # Key features of DDEV's config.yaml:
 
