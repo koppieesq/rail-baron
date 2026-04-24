@@ -658,6 +658,7 @@ body.edit-active [contenteditable] {
           <div class="sw-col-head reveal">Local cluster options</div>
           <ul class="sw-bullets">
             <li class="reveal"><span><strong>Docker Desktop</strong> — one-click enable, great for getting started</span></li>
+            <li class="reveal"><span><strong>Lima + Colima</strong> — Smaller client + command wrapper, more stable</span></li>
             <li class="reveal"><span><strong>minikube</strong> — classic, full-featured, runs a VM</span></li>
             <li class="reveal"><span><strong>kind</strong> — Kubernetes in Docker, no VM needed</span></li>
             <li class="reveal"><span><strong>k3d</strong> — lightweight k3s in Docker, very fast</span></li>
@@ -667,7 +668,7 @@ body.edit-active [contenteditable] {
           <div class="sw-col-head reveal">The basic workflow</div>
           <ul class="sw-bullets">
             <li class="reveal"><span>Build your image: <code>docker build</code></span></li>
-            <li class="reveal"><span>Load it into the cluster: <code>kind load</code></span></li>
+            <li class="reveal"><span>Load it into the cluster: <code>docker push localhost:5000/myapp</code></span></li>
             <li class="reveal"><span>Apply your manifests: <code>kubectl apply -f</code></span></li>
             <li class="reveal"><span>Port-forward to test: <code>kubectl port-forward</code></span></li>
           </ul>
