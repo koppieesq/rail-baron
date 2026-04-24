@@ -253,7 +253,19 @@ export default function TurnPanel({ onValidMoves, onClearMoves }) {
         </div>
       )}
 
-      {/* STEP 3: Pick a city */}
+      {/* STEP 3a: No reachable cities — skip move */}
+      {phase === 'pick_city' && validMoves.length === 0 && (
+        <div className="rb-turn-step">
+          <div className="rb-dice-result">
+            🎲 You rolled <strong>{moveRoll?.total}</strong> — not enough movement to reach any city.
+          </div>
+          <button className="rb-btn rb-btn--ghost rb-mt" onClick={handleEndTurn} disabled={busy}>
+            End Turn
+          </button>
+        </div>
+      )}
+
+      {/* STEP 3b: Pick a city */}
       {phase === 'pick_city' && validMoves.length > 0 && (
         <div className="rb-turn-step">
           <p>🎲 You rolled <strong>{moveRoll?.total}</strong>. Pick a destination:</p>
