@@ -19,6 +19,12 @@ COPY frontend/ ./
 ENV GENERATE_SOURCEMAP=false
 RUN npm run build
 
+# Install ws-server dependencies (pure-JS, portable across Alpine → Debian)
+WORKDIR /app/ws-server
+COPY ws-server/package.json ./
+RUN npm install --omit=dev
+COPY ws-server/ ./
+
 # ============================================================
 # Stage 2: Install Drupal / Composer dependencies
 # ============================================================
@@ -52,7 +58,7 @@ COPY backend/ ./
 FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        nginx supervisor \
+        nginx supervisor nodejs \
         libpng-dev libjpeg-dev libfreetype6-dev \
         libzip-dev libxml2-dev libicu-dev libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -69,6 +75,7 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/app.conf
 # --- Application code ---
 COPY --from=backend-builder /var/www/html/backend /var/www/html/backend
 COPY --from=frontend-builder /app/frontend/build  /var/www/html/frontend
+COPY --from=frontend-builder /app/ws-server       /ws-server
 
 # Drupal writable dirs
 RUN mkdir -p /var/www/html/backend/web/sites/default/files \

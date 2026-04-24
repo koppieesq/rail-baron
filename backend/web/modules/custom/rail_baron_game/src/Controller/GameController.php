@@ -4,6 +4,7 @@ namespace Drupal\rail_baron_game\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\rail_baron_game\GameManager;
+use Drupal\rail_baron_game\WebSocketNotifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,10 +14,16 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class GameController extends ControllerBase {
 
-  public function __construct(private readonly GameManager $gameManager) {}
+  public function __construct(
+    private readonly GameManager $gameManager,
+    private readonly WebSocketNotifier $notifier,
+  ) {}
 
   public static function create(ContainerInterface $container): static {
-    return new static($container->get('rail_baron_game.game_manager'));
+    return new static(
+      $container->get('rail_baron_game.game_manager'),
+      $container->get('rail_baron_game.ws_notifier'),
+    );
   }
 
   /**
@@ -82,6 +89,7 @@ class GameController extends ControllerBase {
 
     try {
       $state = $this->gameManager->joinByCode($joinCode);
+      $this->notifier->notify((int) $state['id']);
       return new JsonResponse(['data' => $state]);
     }
     catch (\RuntimeException $e) {
@@ -95,6 +103,7 @@ class GameController extends ControllerBase {
   public function start(int $game_id): JsonResponse {
     try {
       $state = $this->gameManager->startGame($game_id);
+      $this->notifier->notify($game_id);
       return new JsonResponse(['data' => $state]);
     }
     catch (\RuntimeException $e) {

@@ -4,6 +4,7 @@ namespace Drupal\rail_baron_game\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\rail_baron_game\GameManager;
+use Drupal\rail_baron_game\WebSocketNotifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,10 +14,16 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class PlayerController extends ControllerBase {
 
-  public function __construct(private readonly GameManager $gameManager) {}
+  public function __construct(
+    private readonly GameManager $gameManager,
+    private readonly WebSocketNotifier $notifier,
+  ) {}
 
   public static function create(ContainerInterface $container): static {
-    return new static($container->get('rail_baron_game.game_manager'));
+    return new static(
+      $container->get('rail_baron_game.game_manager'),
+      $container->get('rail_baron_game.ws_notifier'),
+    );
   }
 
   /**
@@ -43,6 +50,7 @@ class PlayerController extends ControllerBase {
 
     try {
       $state = $this->gameManager->updatePlayerState($game_id, $data);
+      $this->notifier->notify($game_id);
       return new JsonResponse(['data' => $state]);
     }
     catch (\RuntimeException $e) {

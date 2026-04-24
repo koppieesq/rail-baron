@@ -23,3 +23,9 @@ services:
       - '@rail_baron_game.data_loader'
       - '@rail_baron_game.movement_service'
       - '@datetime.time'
+
+  rail_baron_game.ws_notifier:
+    class: Drupal\rail_baron_game\WebSocketNotifier
+    arguments:
+      - '@http_client'
+      - '@logger.channel.rail_baron_game'

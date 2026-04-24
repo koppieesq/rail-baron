@@ -3,7 +3,11 @@ import { api } from './api';
 
 const GameContext = createContext(null);
 
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS  = 5000;  // fallback polling when WebSocket is unavailable
+const WS_RECONNECT_MS   = 5000;
+
+const WS_URL = (process.env.REACT_APP_BACKEND_URL || 'https://rb.koplowicz.com')
+  .replace(/^http/, 'ws') + '/ws';
 
 const PLAYER_COLORS = ['#1e88e5', '#e53935', '#43a047', '#fb8c00', '#8e24aa', '#00acc1'];
 
@@ -19,6 +23,9 @@ export function GameProvider({ children }) {
   const [log, setLog]             = useState([]);
   const [error, setError]         = useState(null);
   const pollRef                   = useRef(null);
+  const wsRef                     = useRef(null);
+  const wsReconnectRef            = useRef(null);
+  const refreshRef                = useRef(null); // always-current pointer to refreshState
 
   const appendLog = useCallback((msg) => {
     setLog(prev => [...prev.slice(-99), { ts: Date.now(), msg }]);
@@ -35,14 +42,58 @@ export function GameProvider({ children }) {
     }
   }, [gameId, creds]);
 
-  // Polling when we have an active game.
+  // Keep refreshRef current so WS/polling handlers don't capture a stale closure.
+  useEffect(() => { refreshRef.current = refreshState; }, [refreshState]);
+
+  // WebSocket connection with polling fallback.
   useEffect(() => {
-    if (!gameId || !creds) { clearInterval(pollRef.current); return; }
-    clearInterval(pollRef.current);
-    refreshState(gameId, creds);
-    pollRef.current = setInterval(() => refreshState(gameId, creds), POLL_INTERVAL_MS);
-    return () => clearInterval(pollRef.current);
-  }, [gameId, creds, refreshState]);
+    if (!gameId || !creds) {
+      clearTimeout(wsReconnectRef.current);
+      clearInterval(pollRef.current);
+      if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); wsRef.current = null; }
+      return;
+    }
+
+    refreshState(gameId, creds); // fetch immediately on mount / game change
+
+    function connect(id, cr) {
+      clearTimeout(wsReconnectRef.current);
+      const ws = new WebSocket(WS_URL);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'join', game_id: id }));
+        clearInterval(pollRef.current); // WS is live — stop polling
+        pollRef.current = null;
+      };
+
+      ws.onmessage = (e) => {
+        try {
+          const { type } = JSON.parse(e.data);
+          if (type === 'refresh') refreshRef.current?.(id, cr);
+        } catch (_) {}
+      };
+
+      ws.onclose = () => {
+        // Fall back to polling until reconnect succeeds.
+        if (!pollRef.current) {
+          pollRef.current = setInterval(() => refreshRef.current?.(id, cr), POLL_INTERVAL_MS);
+        }
+        wsReconnectRef.current = setTimeout(() => connect(id, cr), WS_RECONNECT_MS);
+      };
+
+      ws.onerror = () => ws.close();
+    }
+
+    connect(gameId, creds);
+
+    return () => {
+      clearTimeout(wsReconnectRef.current);
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+      if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); wsRef.current = null; }
+    };
+  }, [gameId, creds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- Auth ----------------------------------------------------------------
   const login = useCallback(async (username, password) => {

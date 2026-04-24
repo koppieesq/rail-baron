@@ -4,6 +4,7 @@ namespace Drupal\rail_baron_game\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\rail_baron_game\TurnManager;
+use Drupal\rail_baron_game\WebSocketNotifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,10 +14,16 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class TurnController extends ControllerBase {
 
-  public function __construct(private readonly TurnManager $turnManager) {}
+  public function __construct(
+    private readonly TurnManager $turnManager,
+    private readonly WebSocketNotifier $notifier,
+  ) {}
 
   public static function create(ContainerInterface $container): static {
-    return new static($container->get('rail_baron_game.turn_manager'));
+    return new static(
+      $container->get('rail_baron_game.turn_manager'),
+      $container->get('rail_baron_game.ws_notifier'),
+    );
   }
 
   /**
@@ -27,7 +34,9 @@ class TurnController extends ControllerBase {
    */
   public function rollDestination(int $game_id): JsonResponse {
     try {
-      return new JsonResponse(['data' => $this->turnManager->rollDestination($game_id)]);
+      $state = $this->turnManager->rollDestination($game_id);
+      $this->notifier->notify($game_id);
+      return new JsonResponse(['data' => $state]);
     }
     catch (\RuntimeException $e) {
       return new JsonResponse(['error' => $e->getMessage()], 400);
@@ -41,6 +50,7 @@ class TurnController extends ControllerBase {
    * GET /api/game/{game_id}/valid-moves?roll=N
    *
    * Returns all cities reachable from the player's current city within N spaces.
+   * Read-only — no WS notification needed.
    */
   public function validMoves(Request $request, int $game_id): JsonResponse {
     $roll = (int) $request->query->get('roll', 0);
@@ -78,7 +88,9 @@ class TurnController extends ControllerBase {
     }
 
     try {
-      return new JsonResponse(['data' => $this->turnManager->executeMove($game_id, $targetCity, $roll)]);
+      $state = $this->turnManager->executeMove($game_id, $targetCity, $roll);
+      $this->notifier->notify($game_id);
+      return new JsonResponse(['data' => $state]);
     }
     catch (\RuntimeException $e) {
       return new JsonResponse(['error' => $e->getMessage()], 400);
@@ -102,7 +114,9 @@ class TurnController extends ControllerBase {
     }
 
     try {
-      return new JsonResponse(['data' => $this->turnManager->executePurchase($game_id, $body)]);
+      $state = $this->turnManager->executePurchase($game_id, $body);
+      $this->notifier->notify($game_id);
+      return new JsonResponse(['data' => $state]);
     }
     catch (\RuntimeException | \InvalidArgumentException $e) {
       return new JsonResponse(['error' => $e->getMessage()], 400);
