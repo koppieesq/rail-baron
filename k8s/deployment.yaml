@@ -7,6 +7,11 @@ spec:
   selector:
     matchLabels:
       app: rail-baron
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # spin up new pod before touching the old one
+      maxUnavailable: 0  # never terminate old pod until new pod is ready
   template:
     metadata:
       labels:
@@ -62,6 +67,30 @@ spec:
               value: "^rb\\.koplowicz\\.com$"
             - name: DB_SSL_CA
               value: /etc/ssl/do-db-ca/ca-cert.crt
+          # Liveness: is the PHP-FPM/Nginx process healthy?
+          # Don't start until drush init (cim + updb + cr) has had time to finish.
+          # If this fails 3 times in a row the container is restarted.
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # Readiness: is Drupal fully initialised and ready for traffic?
+          # Starts checking earlier but tolerates failures while drush runs.
+          # The old pod keeps serving until this passes on the new pod.
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12   # up to ~120 s of failures before giving up
+
           volumeMounts:
             - name: do-db-ca
               mountPath: /etc/ssl/do-db-ca
