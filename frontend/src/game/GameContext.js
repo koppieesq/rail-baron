@@ -12,51 +12,49 @@ const WS_URL = (process.env.REACT_APP_BACKEND_URL || 'https://rb.koplowicz.com')
 const PLAYER_COLORS = ['#1e88e5', '#e53935', '#43a047', '#fb8c00', '#8e24aa', '#00acc1'];
 
 export function GameProvider({ children }) {
-  const [creds, setCreds]         = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('rb_creds')); } catch { return null; }
-  });
-  const [gameId, setGameId]       = useState(() => {
+  const [token, setToken]          = useState(() => sessionStorage.getItem('rb_token'));
+  const [gameId, setGameId]        = useState(() => {
     const v = sessionStorage.getItem('rb_game_id');
     return v ? parseInt(v, 10) : null;
   });
-  const [gameState, setGameState] = useState(null);
-  const [log, setLog]             = useState([]);
-  const [error, setError]         = useState(null);
-  const pollRef                   = useRef(null);
-  const wsRef                     = useRef(null);
-  const wsReconnectRef            = useRef(null);
-  const refreshRef                = useRef(null); // always-current pointer to refreshState
+  const [gameState, setGameState]  = useState(null);
+  const [log, setLog]              = useState([]);
+  const [error, setError]          = useState(null);
+  const pollRef                    = useRef(null);
+  const wsRef                      = useRef(null);
+  const wsReconnectRef             = useRef(null);
+  const refreshRef                 = useRef(null); // always-current pointer to refreshState
 
   const appendLog = useCallback((msg) => {
     setLog(prev => [...prev.slice(-99), { ts: Date.now(), msg }]);
   }, []);
 
-  const refreshState = useCallback(async (id = gameId, cr = creds) => {
-    if (!id || !cr) return;
+  const refreshState = useCallback(async (id = gameId, tk = token) => {
+    if (!id || !tk) return;
     try {
-      const res = await api.getState(cr, id);
+      const res = await api.getState(tk, id);
       setGameState(res.data ?? res);
       setError(null);
     } catch (e) {
       setError(e.message);
     }
-  }, [gameId, creds]);
+  }, [gameId, token]);
 
   // Keep refreshRef current so WS/polling handlers don't capture a stale closure.
   useEffect(() => { refreshRef.current = refreshState; }, [refreshState]);
 
   // WebSocket connection with polling fallback.
   useEffect(() => {
-    if (!gameId || !creds) {
+    if (!gameId || !token) {
       clearTimeout(wsReconnectRef.current);
       clearInterval(pollRef.current);
       if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); wsRef.current = null; }
       return;
     }
 
-    refreshState(gameId, creds); // fetch immediately on mount / game change
+    refreshState(gameId, token); // fetch immediately on mount / game change
 
-    function connect(id, cr) {
+    function connect(id, tk) {
       clearTimeout(wsReconnectRef.current);
       const ws = new WebSocket(WS_URL);
       wsRef.current = ws;
@@ -70,22 +68,22 @@ export function GameProvider({ children }) {
       ws.onmessage = (e) => {
         try {
           const { type } = JSON.parse(e.data);
-          if (type === 'refresh') refreshRef.current?.(id, cr);
+          if (type === 'refresh') refreshRef.current?.(id, tk);
         } catch (_) {}
       };
 
       ws.onclose = () => {
         // Fall back to polling until reconnect succeeds.
         if (!pollRef.current) {
-          pollRef.current = setInterval(() => refreshRef.current?.(id, cr), POLL_INTERVAL_MS);
+          pollRef.current = setInterval(() => refreshRef.current?.(id, tk), POLL_INTERVAL_MS);
         }
-        wsReconnectRef.current = setTimeout(() => connect(id, cr), WS_RECONNECT_MS);
+        wsReconnectRef.current = setTimeout(() => connect(id, tk), WS_RECONNECT_MS);
       };
 
       ws.onerror = () => ws.close();
     }
 
-    connect(gameId, creds);
+    connect(gameId, token);
 
     return () => {
       clearTimeout(wsReconnectRef.current);
@@ -93,28 +91,31 @@ export function GameProvider({ children }) {
       pollRef.current = null;
       if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); wsRef.current = null; }
     };
-  }, [gameId, creds]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [gameId, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- Auth ----------------------------------------------------------------
-  const login = useCallback(async (username, password) => {
-    const cr = { username, password };
-    await api.verifyAuth(cr); // throws on 401/403
-    setCreds(cr);
-    sessionStorage.setItem('rb_creds', JSON.stringify(cr));
+  const login = useCallback(async (googleCredential) => {
+    const res = await api.googleAuth(googleCredential); // throws on error
+    setToken(res.access_token);
+    sessionStorage.setItem('rb_token', res.access_token);
+    sessionStorage.setItem('rb_uid', res.uid);
+    sessionStorage.setItem('rb_username', res.username);
   }, []);
 
   const logout = useCallback(() => {
-    setCreds(null);
+    setToken(null);
     setGameId(null);
     setGameState(null);
     setLog([]);
-    sessionStorage.removeItem('rb_creds');
+    sessionStorage.removeItem('rb_token');
+    sessionStorage.removeItem('rb_uid');
+    sessionStorage.removeItem('rb_username');
     sessionStorage.removeItem('rb_game_id');
   }, []);
 
   // ---- Lobby ---------------------------------------------------------------
   const createGame = useCallback(async (maxPlayers) => {
-    const res = await api.createGame(creds, maxPlayers);
+    const res = await api.createGame(token, maxPlayers);
     const state = res.data ?? res;
     const id = parseInt(state.id, 10);
     setGameId(id);
@@ -122,28 +123,28 @@ export function GameProvider({ children }) {
     sessionStorage.setItem('rb_game_id', id);
     appendLog('Game created. Share the join code: ' + state.join_code);
     return state;
-  }, [creds, appendLog]);
+  }, [token, appendLog]);
 
   const joinGame = useCallback(async (joinCode) => {
-    const found = await api.findGame(creds, joinCode.trim().toUpperCase());
+    const found = await api.findGame(token, joinCode.trim().toUpperCase());
     const foundState = found.data ?? found;
     const id = parseInt(foundState.id, 10);
-    const joined = await api.joinGame(creds, id, joinCode.trim().toUpperCase());
+    const joined = await api.joinGame(token, id, joinCode.trim().toUpperCase());
     const state = joined.data ?? joined;
     setGameId(id);
     setGameState(state);
     sessionStorage.setItem('rb_game_id', id);
     appendLog('Joined game ' + state.join_code);
     return state;
-  }, [creds, appendLog]);
+  }, [token, appendLog]);
 
   const startGame = useCallback(async () => {
-    const res = await api.startGame(creds, gameId);
+    const res = await api.startGame(token, gameId);
     const state = res.data ?? res;
     setGameState(state);
     appendLog('Game started!');
     return state;
-  }, [creds, gameId, appendLog]);
+  }, [token, gameId, appendLog]);
 
   const leaveGame = useCallback(() => {
     setGameId(null);
@@ -153,21 +154,21 @@ export function GameProvider({ children }) {
 
   // ---- Turn actions --------------------------------------------------------
   const rollDestination = useCallback(async () => {
-    const res = await api.rollDestination(creds, gameId);
+    const res = await api.rollDestination(token, gameId);
     const state = res.data ?? res;
     setGameState(state);
     const roll = state.destination_roll;
     appendLog(`Rolled destination: ${roll?.die1}+${roll?.die2}=${roll?.sum} (${roll?.parity}) → ${roll?.destination_name}`);
     return state;
-  }, [creds, gameId, appendLog]);
+  }, [token, gameId, appendLog]);
 
   const getValidMoves = useCallback(async (roll) => {
-    const res = await api.getValidMoves(creds, gameId, roll);
+    const res = await api.getValidMoves(token, gameId, roll);
     return res.data ?? res;
-  }, [creds, gameId]);
+  }, [token, gameId]);
 
   const executeMove = useCallback(async (targetCity, roll) => {
-    const res = await api.executeMove(creds, gameId, targetCity, roll);
+    const res = await api.executeMove(token, gameId, targetCity, roll);
     const state = res.data ?? res;
     setGameState(state);
     const summary = state.move_summary;
@@ -179,31 +180,31 @@ export function GameProvider({ children }) {
       appendLog(msg);
     }
     return state;
-  }, [creds, gameId, appendLog]);
+  }, [token, gameId, appendLog]);
 
   const purchaseRailroad = useCallback(async (abbr) => {
-    const res = await api.purchaseRailroad(creds, gameId, abbr);
+    const res = await api.purchaseRailroad(token, gameId, abbr);
     const state = res.data ?? res;
     setGameState(state);
     appendLog(`Purchased railroad: ${abbr}`);
     return state;
-  }, [creds, gameId, appendLog]);
+  }, [token, gameId, appendLog]);
 
   const purchaseTrain = useCallback(async (trainType) => {
-    const res = await api.purchaseTrain(creds, gameId, trainType);
+    const res = await api.purchaseTrain(token, gameId, trainType);
     const state = res.data ?? res;
     setGameState(state);
     appendLog(`Upgraded train to: ${trainType}`);
     return state;
-  }, [creds, gameId, appendLog]);
+  }, [token, gameId, appendLog]);
 
   const endTurn = useCallback(async () => {
-    const res = await api.endTurn(creds, gameId);
+    const res = await api.endTurn(token, gameId);
     const state = res.data ?? res;
     setGameState(state);
     appendLog('Turn ended.');
     return state;
-  }, [creds, gameId, appendLog]);
+  }, [token, gameId, appendLog]);
 
   // ---- Derived state -------------------------------------------------------
   const myUid     = gameState?.current_uid ?? null;
@@ -215,7 +216,7 @@ export function GameProvider({ children }) {
 
   return (
     <GameContext.Provider value={{
-      creds, gameId, gameState, log, error,
+      token, gameId, gameState, log, error,
       myUid, myPlayer, isMyTurn, playerColors,
       login, logout,
       createGame, joinGame, startGame, leaveGame,

@@ -53,6 +53,11 @@ spec:
                 secretKeyRef:
                   name: rail-baron-secrets
                   key: drupal-hash-salt
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: rail-baron-secrets
+                  key: google-client-id
             - name: TRUSTED_HOST_PATTERNS
               value: "^rb\\.koplowicz\\.com$"
             - name: DB_SSL_CA

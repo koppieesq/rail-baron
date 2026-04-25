@@ -6,3 +6,4 @@ package: Custom
 dependencies:
   - drupal:user
   - drupal:serialization
+  - simple_oauth:simple_oauth

@@ -11,9 +11,9 @@ import GameView from './game/GameView';
 
 // Decides which game screen to show based on auth + game state.
 function GameRouter() {
-  const { creds, gameId, gameState } = useGame();
+  const { token, gameId, gameState } = useGame();
 
-  if (!creds) return <LoginScreen />;
+  if (!token) return <LoginScreen />;
 
   // Active or finished game.
   if (gameId && gameState && (gameState.status === 'active' || gameState.status === 'finished')) {

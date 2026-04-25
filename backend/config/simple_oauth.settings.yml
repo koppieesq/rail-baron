@@ -1,0 +1,5 @@
+public_key: 'sites/default/files/private/oauth/public.key'
+private_key: 'sites/default/files/private/oauth/private.key'
+access_token_expiration: 86400
+refresh_token_expiration: 1209600
+token_cron_batch_size: 0

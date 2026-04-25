@@ -1,24 +1,20 @@
 import { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useGame } from './GameContext';
 import './game.css';
 
 export default function LoginScreen() {
   const { login } = useGame();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSuccess = async ({ credential }) => {
     setLoading(true);
     setError('');
     try {
-      await login(username, password);
-    } catch (err) {
-      setError(err.status === 401 || err.status === 403
-        ? 'Invalid username or password.'
-        : 'Could not reach the server. Check your connection.');
+      await login(credential);
+    } catch {
+      setError('Sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -28,38 +24,17 @@ export default function LoginScreen() {
     <div className="rb-screen rb-screen--center">
       <div className="rb-card rb-login-card">
         <h2 className="rb-card-title">Sign In</h2>
-        <p className="rb-card-subtitle">Use your Rail Baron account credentials.</p>
-
-        <form onSubmit={handleSubmit} className="rb-form">
-          <label className="rb-label">
-            Username
-            <input
-              className="rb-input"
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              disabled={loading}
-              required
+        <p className="rb-card-subtitle">Use your Google account to play Rail Baron.</p>
+        {error && <p className="rb-error">{error}</p>}
+        {loading
+          ? <p className="rb-muted">Signing in…</p>
+          : (
+            <GoogleLogin
+              onSuccess={handleSuccess}
+              onError={() => setError('Google sign-in was cancelled.')}
             />
-          </label>
-          <label className="rb-label">
-            Password
-            <input
-              className="rb-input"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </label>
-          {error && <p className="rb-error">{error}</p>}
-          <button className="rb-btn rb-btn--primary" type="submit" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign In'}
-          </button>
-        </form>
+          )
+        }
       </div>
     </div>
   );

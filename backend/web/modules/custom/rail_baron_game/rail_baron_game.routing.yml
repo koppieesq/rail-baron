@@ -1,10 +1,25 @@
-# All routes require an authenticated user.
+# All game routes require an authenticated user.
 # Authentication is handled by Drupal's pluggable auth system:
-#   - basic_auth module: Authorization: Basic ... header
-#   - simple_oauth module: Authorization: Bearer ... header (preferred for the React SPA)
+#   - oauth2:      Authorization: Bearer <jwt>  (Simple OAuth — primary for the React SPA)
+#   - basic_auth:  Authorization: Basic ...     (kept for transition / dev; remove after cutover)
+#   - cookie:      Drupal session cookie
 #
-# The _auth option is required for basic_auth to activate on custom routes.
-# Without it, Drupal only uses session/cookie auth (basic_auth is not "global").
+# The _auth option activates non-global providers (basic_auth, oauth2) on custom routes.
+
+# ---------------------------------------------------------------------------
+# Google OAuth token exchange (anonymous — credential is the authentication)
+# ---------------------------------------------------------------------------
+
+rail_baron_game.google_auth:
+  path: '/api/auth/google'
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\GoogleAuthController::exchange'
+    _title: 'Google OAuth Token Exchange'
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
 
 # ---------------------------------------------------------------------------
 # Game lifecycle (Phase 2)
@@ -17,7 +32,7 @@ rail_baron_game.create:
     _controller: '\Drupal\rail_baron_game\Controller\GameController::createGame'
     _title: 'Create Game'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
 
@@ -28,7 +43,7 @@ rail_baron_game.find:
     _controller: '\Drupal\rail_baron_game\Controller\GameController::find'
     _title: 'Find Game by Join Code'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
 
@@ -39,7 +54,7 @@ rail_baron_game.state:
     _controller: '\Drupal\rail_baron_game\Controller\GameController::getState'
     _title: 'Game State'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
@@ -51,7 +66,7 @@ rail_baron_game.join:
     _controller: '\Drupal\rail_baron_game\Controller\GameController::join'
     _title: 'Join Game'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
@@ -63,7 +78,7 @@ rail_baron_game.start:
     _controller: '\Drupal\rail_baron_game\Controller\GameController::start'
     _title: 'Start Game'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
@@ -75,7 +90,7 @@ rail_baron_game.update_player:
     _controller: '\Drupal\rail_baron_game\Controller\PlayerController::update'
     _title: 'Update Player State'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
@@ -91,7 +106,7 @@ rail_baron_game.roll_destination:
     _controller: '\Drupal\rail_baron_game\Controller\TurnController::rollDestination'
     _title: 'Roll for Destination'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
@@ -103,7 +118,7 @@ rail_baron_game.valid_moves:
     _controller: '\Drupal\rail_baron_game\Controller\TurnController::validMoves'
     _title: 'Valid Moves'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
@@ -115,7 +130,7 @@ rail_baron_game.move:
     _controller: '\Drupal\rail_baron_game\Controller\TurnController::executeMove'
     _title: 'Execute Move'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
@@ -127,7 +142,7 @@ rail_baron_game.purchase:
     _controller: '\Drupal\rail_baron_game\Controller\TurnController::executePurchase'
     _title: 'Purchase Railroad or Train Upgrade'
   options:
-    _auth: ['basic_auth', 'cookie']
+    _auth: ['oauth2', 'basic_auth', 'cookie']
   requirements:
     _user_is_logged_in: 'TRUE'
     game_id: '\d+'
