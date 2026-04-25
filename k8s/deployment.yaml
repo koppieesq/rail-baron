@@ -68,16 +68,14 @@ spec:
               value: "^rb\\.koplowicz\\.com$"
             - name: DB_SSL_CA
               value: /etc/ssl/do-db-ca/ca-cert.crt
-          # Liveness: is the PHP-FPM/Nginx process healthy?
-          # Don't start until drush init (cim + updb + cr) has had time to finish.
-          # If this fails 3 times in a row the container is restarted.
+          # Liveness: did entrypoint.sh start (i.e. supervisord + the init program are running)?
+          # Written at the very top of entrypoint.sh before any drush work, so it appears
+          # within seconds of container start and persists until the container is replaced.
           livenessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 90
+            exec:
+              command: ["test", "-f", "/tmp/drupal-live"]
+            initialDelaySeconds: 10
             periodSeconds: 15
-            timeoutSeconds: 5
             failureThreshold: 3
 
           # Readiness: has entrypoint.sh (drush cim/updb/cr) finished?

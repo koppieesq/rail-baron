@@ -4,6 +4,10 @@ set -e
 # Drupal initialization — run once at startup via supervisord (program:drupal-init).
 # Output is captured by supervisord and streamed to kubectl logs automatically.
 
+# Signal to the Kubernetes liveness probe that the container is alive.
+# Written immediately so the probe never trips during the drush init phase.
+touch /tmp/drupal-live
+
 # Ensure Drupal's files directory is writable
 chown -R www-data:www-data /var/www/html/backend/web/sites/default/files 2>/dev/null || true
 
