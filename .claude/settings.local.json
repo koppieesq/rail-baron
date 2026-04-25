@@ -8,7 +8,10 @@
       "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron ls-files)",
       "Bash(git -C /Users/koppie/PhpstormProjects/rail-baron log --all -p -- \"settings.php\")",
       "Bash(git:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebSearch",
+      "Bash(xargs cat:*)",
+      "WebFetch(domain:www.drupal.org)"
     ]
   }
 }
