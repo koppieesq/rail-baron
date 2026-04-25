@@ -27,6 +27,14 @@ class GameController extends ControllerBase {
   }
 
   /**
+   * GET /api/games/open
+   */
+  public function listOpen(): JsonResponse {
+    $games = $this->gameManager->getOpenGames();
+    return new JsonResponse(['data' => $games]);
+  }
+
+  /**
    * POST /api/game
    *
    * Body (JSON): { "max_players": 4 }

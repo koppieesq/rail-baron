@@ -25,6 +25,9 @@ export const api = {
   googleAuth: (credential) =>
     apiFetch('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
 
+  listOpenGames: (token) =>
+    apiFetch('/api/games/open', {}, token),
+
   createGame: (token, maxPlayers = 4) =>
     apiFetch('/api/game', { method: 'POST', body: JSON.stringify({ max_players: maxPlayers }) }, token),
 

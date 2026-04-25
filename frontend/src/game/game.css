@@ -81,6 +81,26 @@
 }
 
 .rb-login-card { max-width: 360px; }
+.rb-card--wide  { max-width: 600px; }
+
+/* ---- Open games table ---------------------------------------------- */
+.rb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.rb-table th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  color: #7a9bc4;
+  border-bottom: 1px solid #1e2d47;
+}
+.rb-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #1a2640;
+  vertical-align: middle;
+}
+.rb-table tr:last-child td { border-bottom: none; }
 
 .rb-card-title {
   margin: 0 0 0.25rem;

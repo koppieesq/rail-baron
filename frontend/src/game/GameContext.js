@@ -146,6 +146,11 @@ export function GameProvider({ children }) {
     return state;
   }, [token, gameId, appendLog]);
 
+  const listOpenGames = useCallback(async () => {
+    const res = await api.listOpenGames(token);
+    return res.data ?? res;
+  }, [token]);
+
   const leaveGame = useCallback(() => {
     setGameId(null);
     setGameState(null);
@@ -219,7 +224,7 @@ export function GameProvider({ children }) {
       token, gameId, gameState, log, error,
       myUid, myPlayer, isMyTurn, playerColors,
       login, logout,
-      createGame, joinGame, startGame, leaveGame,
+      createGame, joinGame, startGame, leaveGame, listOpenGames,
       rollDestination, getValidMoves, executeMove,
       purchaseRailroad, purchaseTrain, endTurn,
       refreshState,

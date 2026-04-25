@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from './GameContext';
 import './game.css';
 
@@ -58,11 +58,95 @@ function WaitingRoom({ state }) {
   );
 }
 
+// ---- Open Games Browser ---------------------------------------------------
+function OpenGamesBrowser({ onBack }) {
+  const { joinGame, listOpenGames } = useGame();
+  const [games, setGames]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(null); // join_code being joined
+  const [error, setError]     = useState('');
+
+  const refresh = async () => {
+    try {
+      const list = await listOpenGames();
+      setGames(list);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refresh();
+    const id = setInterval(refresh, 5000);
+    return () => clearInterval(id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleJoin = async (joinCode) => {
+    setJoining(joinCode);
+    setError('');
+    try {
+      await joinGame(joinCode);
+    } catch (e) {
+      setError(e.message);
+      setJoining(null);
+    }
+  };
+
+  return (
+    <div className="rb-screen rb-screen--center">
+      <div className="rb-card rb-card--wide">
+        <h2 className="rb-card-title">Open Games</h2>
+
+        {error && <p className="rb-error">{error}</p>}
+
+        {loading ? (
+          <p className="rb-muted">Loading…</p>
+        ) : games.length === 0 ? (
+          <p className="rb-muted">No open games right now. Create one!</p>
+        ) : (
+          <table className="rb-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Players</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {games.map(g => (
+                <tr key={g.id}>
+                  <td><span className="rb-join-code">{g.join_code}</span></td>
+                  <td>{g.player_count} / {g.max_players}</td>
+                  <td>
+                    <button
+                      className="rb-btn rb-btn--secondary rb-btn--sm"
+                      onClick={() => handleJoin(g.join_code)}
+                      disabled={joining !== null}
+                    >
+                      {joining === g.join_code ? 'Joining…' : 'Join'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <div className="rb-btn-row" style={{ marginTop: '1rem' }}>
+          <button className="rb-btn rb-btn--ghost" onClick={onBack}>Back</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---- Lobby (create or join) -----------------------------------------------
 export default function LobbyScreen() {
   const { gameState, createGame, joinGame, logout } = useGame();
 
-  const [mode, setMode]         = useState('choose'); // 'choose' | 'create' | 'join'
+  const [mode, setMode]         = useState('choose'); // 'choose' | 'create' | 'join' | 'browse'
   const [maxPlayers, setMax]    = useState(4);
   const [joinCode, setJoinCode] = useState('');
   const [loading, setLoading]   = useState(false);
@@ -70,6 +154,8 @@ export default function LobbyScreen() {
 
   // If we're already in a waiting-room game, show the waiting room.
   if (gameState?.status === 'waiting') return <WaitingRoom state={gameState} />;
+
+  if (mode === 'browse') return <OpenGamesBrowser onBack={() => setMode('choose')} />;
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -94,7 +180,8 @@ export default function LobbyScreen() {
         {mode === 'choose' && (
           <div className="rb-btn-col">
             <button className="rb-btn rb-btn--primary" onClick={() => setMode('create')}>Create Game</button>
-            <button className="rb-btn rb-btn--secondary" onClick={() => setMode('join')}>Join Game</button>
+            <button className="rb-btn rb-btn--secondary" onClick={() => setMode('browse')}>Browse Open Games</button>
+            <button className="rb-btn rb-btn--secondary" onClick={() => setMode('join')}>Join by Code</button>
             <button className="rb-btn rb-btn--ghost" onClick={logout}>Sign Out</button>
           </div>
         )}

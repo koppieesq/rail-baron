@@ -46,6 +46,7 @@ class GameManager {
 
   /**
    * Adds the current user to a game identified by join code.
+   * Auto-starts the game if it reaches max_players after this join.
    */
   public function joinByCode(string $joinCode): array {
     $game = $this->database->select('rail_baron_game', 'g')
@@ -84,7 +85,39 @@ class GameManager {
 
     $this->addPlayer($gameId, $uid, $count);
 
+    // Auto-start when the game is now full.
+    if ($count + 1 >= (int) $game['max_players']) {
+      $this->doStartGame($gameId);
+    }
+
     return $this->getGameState($gameId);
+  }
+
+  /**
+   * Returns all open (waiting) games with their current player counts.
+   */
+  public function getOpenGames(): array {
+    $query = $this->database->select('rail_baron_game', 'g');
+    $query->fields('g', ['id', 'join_code', 'max_players', 'created']);
+    $query->condition('g.status', 'waiting');
+    $query->orderBy('g.created', 'DESC');
+    $query->addJoin('LEFT', 'rail_baron_player_state', 'ps', 'ps.game_id = g.id');
+    $query->addExpression('COUNT(ps.id)', 'player_count');
+    $query->groupBy('g.id');
+    $query->groupBy('g.join_code');
+    $query->groupBy('g.max_players');
+    $query->groupBy('g.created');
+
+    $rows = $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
+
+    foreach ($rows as &$row) {
+      $row['id'] = (int) $row['id'];
+      $row['max_players'] = (int) $row['max_players'];
+      $row['player_count'] = (int) $row['player_count'];
+      $row['created'] = (int) $row['created'];
+    }
+
+    return $rows;
   }
 
   /**
@@ -106,15 +139,31 @@ class GameManager {
       throw new \RuntimeException('Only the game creator can start the game.');
     }
 
-    // Assign unique random home cities.
+    $this->doStartGame($gameId);
+    return $this->getGameState($gameId);
+  }
+
+  /**
+   * Core start logic: assigns home cities and activates the game.
+   * No permission check — callers are responsible for authorization.
+   */
+  private function doStartGame(int $gameId): void {
+    // Guard against double-start in race conditions.
+    $game = $this->getGame($gameId);
+    if ($game['status'] !== 'waiting') {
+      return;
+    }
+
+    $players = $this->getPlayers($gameId);
+    $creator = $players[0];
+
     $cityIds = range(1, 65);
     shuffle($cityIds);
     foreach ($players as $i => $player) {
-      $homeCity = $cityIds[$i];
       $this->database->update('rail_baron_player_state')
         ->fields([
-          'home_city_id' => $homeCity,
-          'current_city_id' => $homeCity,
+          'home_city_id' => $cityIds[$i],
+          'current_city_id' => $cityIds[$i],
           'updated' => $this->time->getRequestTime(),
         ])
         ->condition('id', $player['id'])
@@ -129,8 +178,6 @@ class GameManager {
       ])
       ->condition('id', $gameId)
       ->execute();
-
-    return $this->getGameState($gameId);
   }
 
   /**

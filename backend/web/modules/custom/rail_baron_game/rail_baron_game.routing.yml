@@ -25,6 +25,17 @@ rail_baron_game.google_auth:
 # Game lifecycle (Phase 2)
 # ---------------------------------------------------------------------------
 
+rail_baron_game.list_open:
+  path: '/api/games/open'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\rail_baron_game\Controller\GameController::listOpen'
+    _title: 'List Open Games'
+  options:
+    _auth: ['oauth2', 'basic_auth', 'cookie']
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
 rail_baron_game.create:
   path: '/api/game'
   methods: [POST]
