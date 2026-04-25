@@ -160,7 +160,7 @@ class GoogleAuthController extends ControllerBase {
 
     $this->accessTokenRepository->persistNewAccessToken($token);
 
-    return (string) $token->convertToJWT();
+    return $token->convertToJWT()->toString();
   }
 
   /**
