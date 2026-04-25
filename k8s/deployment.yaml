@@ -79,17 +79,15 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
 
-          # Readiness: is Drupal fully initialised and ready for traffic?
-          # Starts checking earlier but tolerates failures while drush runs.
-          # The old pod keeps serving until this passes on the new pod.
+          # Readiness: has entrypoint.sh (drush cim/updb/cr) finished?
+          # entrypoint.sh writes /tmp/drupal-ready on success; only then does
+          # the pod join the service and the old pod get terminated.
           readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 12   # up to ~120 s of failures before giving up
+            exec:
+              command: ["test", "-f", "/tmp/drupal-ready"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 60   # up to 5 min for drush to complete
 
           volumeMounts:
             - name: do-db-ca

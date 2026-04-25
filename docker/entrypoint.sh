@@ -61,3 +61,6 @@ echo "[drupal-init] Clearing caches..."
 $DRUSH cr
 
 echo "[drupal-init] Done."
+
+# Signal to the Kubernetes readiness probe that initialisation is complete.
+touch /tmp/drupal-ready
