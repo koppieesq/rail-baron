@@ -17,6 +17,7 @@ docker buildx build \
   --platform linux/amd64 \
   --build-arg REACT_APP_FEED_URL="$REACT_APP_FEED_URL" \
   --build-arg REACT_APP_API_URL="$REACT_APP_API_URL" \
+  --build-arg REACT_APP_GOOGLE_CLIENT_ID="$REACT_APP_GOOGLE_CLIENT_ID" \
   -t "$IMAGE" \
   --push \
   .
