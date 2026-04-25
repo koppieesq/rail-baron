@@ -39,7 +39,10 @@ else
   echo "[drupal-init] Config sync directory is empty — skipping cim."
 fi
 
-# Seed the Simple OAuth consumer entity (stored in DB, not config YAML).
+echo "[drupal-init] Running database updates..."
+$DRUSH updb -y --no-interaction
+
+# Seed the Simple OAuth consumer entity after updb so the consumers table exists.
 echo "[drupal-init] Ensuring Rail Baron App OAuth consumer exists..."
 $DRUSH eval "
   \$s = \Drupal::entityTypeManager()->getStorage('consumer');
@@ -50,12 +53,11 @@ $DRUSH eval "
       'is_default'              => TRUE,
       'access_token_expiration' => 86400,
     ])->save();
-    echo 'Consumer created.';
+    echo '[drupal-init] Consumer created.' . PHP_EOL;
+  } else {
+    echo '[drupal-init] Consumer already exists.' . PHP_EOL;
   }
-" 2>/dev/null || true
-
-echo "[drupal-init] Running database updates..."
-$DRUSH updb -y --no-interaction
+" || true
 
 echo "[drupal-init] Clearing caches..."
 $DRUSH cr

@@ -22,6 +22,7 @@ spec:
       containers:
         - name: rail-baron
           image: registry.digitalocean.com/koppie/rail-baron:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
               name: drupal

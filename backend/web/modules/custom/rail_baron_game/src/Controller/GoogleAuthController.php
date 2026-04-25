@@ -56,12 +56,19 @@ class GoogleAuthController extends ControllerBase {
     // Verify the Google ID token and extract claims.
     $info = $this->verifyGoogleToken($credential);
     if ($info === NULL) {
-      return new JsonResponse(['error' => 'Failed to verify Google token.'], 401);
+      return new JsonResponse(['error' => 'Google token verification failed — could not reach tokeninfo endpoint.'], 401);
+    }
+    if (empty($info['sub'])) {
+      return new JsonResponse(['error' => 'Google token invalid: missing sub claim.'], 401);
     }
 
-    $googleClientId = getenv('GOOGLE_CLIENT_ID');
-    if (empty($info['sub']) || empty($googleClientId) || $info['aud'] !== $googleClientId) {
-      return new JsonResponse(['error' => 'Invalid token audience.'], 401);
+    $googleClientId = getenv('GOOGLE_CLIENT_ID') ?: ($_SERVER['GOOGLE_CLIENT_ID'] ?? '');
+    if (empty($googleClientId)) {
+      \Drupal::logger('rail_baron_game')->error('GOOGLE_CLIENT_ID env var is not set.');
+      return new JsonResponse(['error' => 'Server misconfiguration: missing client ID.'], 500);
+    }
+    if ($info['aud'] !== $googleClientId) {
+      return new JsonResponse(['error' => 'Token audience mismatch.'], 401);
     }
 
     $email = $info['email'] ?? '';
@@ -139,6 +146,7 @@ class GoogleAuthController extends ControllerBase {
       ->loadByProperties(['client_id' => 'rail_baron_app']);
     $consumer = reset($consumers);
     if (!$consumer) {
+      \Drupal::logger('rail_baron_game')->error('OAuth consumer "rail_baron_app" not found — run entrypoint.sh or seed manually.');
       throw new \RuntimeException('OAuth consumer "rail_baron_app" is not configured.');
     }
 
@@ -159,8 +167,20 @@ class GoogleAuthController extends ControllerBase {
    * Loads the Simple OAuth private key from config.
    */
   private function getPrivateKey(): CryptKey {
-    $config = $this->configFactory()->get('simple_oauth.settings');
-    $path = $this->fileSystem->realpath($config->get('private_key')) ?: $config->get('private_key');
+    $configured = $this->config('simple_oauth.settings')->get('private_key');
+
+    // realpath() handles absolute paths and stream wrappers.
+    // For relative paths (e.g. "sites/default/files/…") PHP's CWD inside
+    // PHP-FPM is not guaranteed to be the Drupal webroot, so fall back to
+    // an explicit DRUPAL_ROOT-relative resolution.
+    $path = $this->fileSystem->realpath($configured);
+    if (!$path || !file_exists($path)) {
+      $path = DRUPAL_ROOT . '/' . ltrim($configured, '/');
+    }
+    if (!file_exists($path)) {
+      throw new \RuntimeException("Simple OAuth private key not found at: $path");
+    }
+
     return new CryptKey(
       file_get_contents($path),
       NULL,
