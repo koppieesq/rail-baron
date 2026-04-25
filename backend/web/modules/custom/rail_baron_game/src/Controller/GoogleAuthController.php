@@ -3,9 +3,7 @@
 namespace Drupal\rail_baron_game\Controller;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\simple_oauth\Entities\ClientEntity;
@@ -29,18 +27,14 @@ class GoogleAuthController extends ControllerBase {
 
   public function __construct(
     private readonly ClientInterface $httpClient,
-    private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly AccessTokenRepository $accessTokenRepository,
-    private readonly ConfigFactoryInterface $configFactory,
     private readonly FileSystemInterface $fileSystem,
   ) {}
 
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('http_client'),
-      $container->get('entity_type.manager'),
       $container->get('simple_oauth.repositories.access_token'),
-      $container->get('config.factory'),
       $container->get('file_system'),
     );
   }
@@ -125,7 +119,7 @@ class GoogleAuthController extends ControllerBase {
    */
   private function createUser(string $email, string $displayName): \Drupal\user\UserInterface {
     /** @var \Drupal\user\UserInterface $user */
-    $user = $this->entityTypeManager->getStorage('user')->create([
+    $user = $this->entityTypeManager()->getStorage('user')->create([
       'name'   => $this->makeUniqueUsername($displayName),
       'mail'   => $email,
       'pass'   => bin2hex(random_bytes(16)),
@@ -140,7 +134,7 @@ class GoogleAuthController extends ControllerBase {
    * Mints a Simple OAuth Bearer JWT for the given Drupal user ID.
    */
   private function mintToken(int $uid): string {
-    $consumers = $this->entityTypeManager
+    $consumers = $this->entityTypeManager()
       ->getStorage('consumer')
       ->loadByProperties(['client_id' => 'rail_baron_app']);
     $consumer = reset($consumers);
@@ -165,7 +159,7 @@ class GoogleAuthController extends ControllerBase {
    * Loads the Simple OAuth private key from config.
    */
   private function getPrivateKey(): CryptKey {
-    $config = $this->configFactory->get('simple_oauth.settings');
+    $config = $this->configFactory()->get('simple_oauth.settings');
     $path = $this->fileSystem->realpath($config->get('private_key')) ?: $config->get('private_key');
     return new CryptKey(
       file_get_contents($path),
