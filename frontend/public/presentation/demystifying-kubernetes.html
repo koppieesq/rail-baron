@@ -121,11 +121,11 @@ img, .image-container { max-width: 100%; max-height: min(50vh, 400px); object-fi
   pointer-events: none; z-index: 0;
 }
 
-/* Red top accent bar */
+/* Top accent bar — light tint so the red progress bar reads as actual progress */
 .slide::after {
   content: '';
   position: absolute; top: 0; left: 0; right: 0;
-  height: 5px; background: var(--red); z-index: 20;
+  height: 5px; background: rgba(255,51,0,0.18); z-index: 20;
 }
 
 /* Two-column layout: narrow label col | wide content col */
