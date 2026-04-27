@@ -507,7 +507,12 @@ body.edit-active [contenteditable] {
       <ul class="sw-bullets">
         <li class="reveal"><span><strong>A container orchestrator</strong> — it runs your Docker containers, decides where they live, and keeps them alive</span></li>
         <li class="reveal"><span><strong>Open source</strong>, originally from Google, now the industry standard</span></li>
-        <li class="reveal"><span><strong>Scales automatically</strong> — need more traffic? Kubernetes spins up more copies of your app</span></li>
+        <li class="reveal">
+          <span><strong>Scales automatically</strong> — more traffic? Kubernetes spins up more copies of your app</span>
+          <ul class="sw-bullets">
+            <li class="reveal"><span>Horizontal vs. vertical scaling</span></li>
+          </ul>
+        </li>
         <li class="reveal"><span><strong>Self-healing</strong> — crashed container? It restarts it without you lifting a finger</span></li>
       </ul>
       <div class="sw-callout reveal">
@@ -543,6 +548,16 @@ body.edit-active [contenteditable] {
   </div>
   <div class="sw-footer">
     <span>Demystifying Kubernetes</span><div class="pip"></div><span>Why Kubernetes?</span>
+  </div>
+</section>
+
+<!-- SLIDE 5A - THE DIAGRAM -->
+<section class="slide" id="s5a">
+  <div class="sw-layout">
+    <div class="sw-left"><span class="sw-tag reveal-left">Diagram</span></div>
+    <div class="sw-right">
+      <img src="figure1.png" alt="diagram" style="max-height: 100%;" />
+    </div>
   </div>
 </section>
 
