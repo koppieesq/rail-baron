@@ -551,8 +551,8 @@ body.edit-active [contenteditable] {
   </div>
 </section>
 
-<!-- SLIDE 5A - THE DIAGRAM -->
-<section class="slide" id="s5a">
+<!-- SLIDE 4A - THE DIAGRAM -->
+<section class="slide" id="s4a">
   <div class="sw-layout">
     <div class="sw-left"><span class="sw-tag reveal-left">Diagram</span></div>
     <div class="sw-right">
@@ -645,7 +645,7 @@ body.edit-active [contenteditable] {
         <li class="reveal"><span><strong>Base image</strong> — <code>php:8.3-fpm-alpine</code> is small and fast; <code>-bookworm</code> has more system libs available</span></li>
         <li class="reveal"><span><strong>PHP extensions</strong> — Drupal needs <code>pdo_mysql</code>, <code>gd</code>, <code>opcache</code>, <code>apcu</code>; add more for your modules</span></li>
         <li class="reveal"><span><strong>Nginx vs Apache</strong> — run as a sidecar container, or bake Nginx in with a custom entrypoint</span></li>
-        <li class="reveal"><span><strong>Build vs runtime</strong> — run Composer during build (good for prod)</span></li>
+        <li class="reveal"><span><strong>Build vs runtime</strong> — run Composer during build?</span></li>
         <li class="reveal"><span><strong>Non-root user</strong> — always run the app as a non-root user in production</span></li>
       </ul>
     </div>
@@ -752,6 +752,18 @@ body.edit-active [contenteditable] {
   </div>
 </section>
 
+<!-- SLIDE 10A - NETWORK DIAGRAM (figure 2) -->
+<section class="slide" id="s10a">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Network</span>
+    </div>
+    <div class="sw-right">
+      <img src="figure2.png" alt="network diagram" style="max-height: 100%" />
+    </div>
+  </div>
+</section>
+
 <!-- ==========================================
      SLIDE 11 — PERSISTENT STORAGE
      ========================================== -->
@@ -840,10 +852,10 @@ body.edit-active [contenteditable] {
 <span class="cmd">git clone</span> https://github.com/koppieesq/rail-baron
 
 <span class="comment"># What's inside:</span>
-<span class="comment">#   Dockerfile         — PHP-FPM + Nginx, production-ready</span>
-<span class="comment">#   k8s/               — Deployment, Service, Ingress manifests</span>
-<span class="comment">#   k8s/secrets.yaml   — Template for DB credentials</span>
-<span class="comment">#   README.md          — Step-by-step setup guide</span></div>
+<span class="comment">#   Dockerfile                — PHP-FPM + Nginx, production-ready</span>
+<span class="comment">#   k8s/                      — Deployment, Service, Ingress manifests</span>
+<span class="comment">#   k8s/secret.example.yaml   — Template for DB credentials</span>
+<span class="comment">#   README.md                 — Step-by-step setup guide</span></div>
       <div style="margin-top: clamp(0.6rem, 1.5vh, 1.5rem)">
         <span class="sw-badge filled reveal">Free</span>
         <span class="sw-badge reveal">GPL License</span>
@@ -873,6 +885,7 @@ body.edit-active [contenteditable] {
       <ul class="sw-bullets" style="margin-top: clamp(0.5rem,1.2vh,1.2rem)">
         <li class="reveal"><span><strong>Slides &amp; starter kit</strong> — github.com/koppieesq/rail-baron</span></li>
         <li class="reveal"><span><strong>Drupal.org</strong> — drupal.org/u/koppie</span></li>
+        <li class="reveal"><span><strong>We're hiring!</strong> - https://www.tesla.com/careers/search/job/product-manager-vehicle-service-268625</span></li>
       </ul>
     </div>
   </div>
