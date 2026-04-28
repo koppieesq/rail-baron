@@ -121,11 +121,11 @@ img, .image-container { max-width: 100%; max-height: min(50vh, 400px); object-fi
   pointer-events: none; z-index: 0;
 }
 
-/* Red top accent bar */
+/* Top accent bar — light tint so the red progress bar reads as actual progress */
 .slide::after {
   content: '';
   position: absolute; top: 0; left: 0; right: 0;
-  height: 5px; background: var(--red); z-index: 20;
+  height: 5px; background: rgba(255,51,0,0.18); z-index: 20;
 }
 
 /* Two-column layout: narrow label col | wide content col */
@@ -413,15 +413,15 @@ body.edit-active [contenteditable] {
 }
 
 /* ===========================================
-   SLIDE 14 — CLOSING
+   CLOSING
    =========================================== */
-#s14 .big-thanks {
+.big-thanks {
   font-family: 'Archivo', sans-serif; font-weight: 800;
   font-size: clamp(2rem, 7vw, 5.5rem);
   color: var(--ink); line-height: 1.0;
   margin-bottom: clamp(0.5rem, 1.5vh, 1.5rem);
 }
-#s14 .big-thanks em { color: var(--red); font-style: normal; }
+.big-thanks em { color: var(--red); font-style: normal; }
 
 </style>
 </head>
@@ -451,15 +451,12 @@ body.edit-active [contenteditable] {
       <div class="sw-num">01</div>
     </div>
     <div class="sw-right">
-      <div class="kicker reveal">Conference Talk · Drupal &amp; DevOps</div>
+      <div class="kicker reveal">Stanford Web Camp 2026</div>
       <h1 class="reveal">Demystifying<br>Kubernetes</h1>
       <div class="red-rule"></div>
       <p class="tagline reveal">A gentle introduction for Drupal developers — Dockerfiles, local dev, and cloud deployment. No prior Kubernetes experience required.</p>
       <p class="meta reveal">Jordan Koplowicz</p>
     </div>
-  </div>
-  <div class="sw-footer">
-    <span>DrupalCon</span><div class="pip"></div><span>2026</span>
   </div>
 </section>
 
@@ -478,16 +475,14 @@ body.edit-active [contenteditable] {
       <div class="red-rule"></div>
       <ol class="sw-numbered">
         <li class="reveal"><span>What is Kubernetes, and why should Drupal developers care?</span></li>
-        <li class="reveal"><span>The Dockerfile — your options, and how to write your own</span></li>
-        <li class="reveal"><span>Running Kubernetes locally</span></li>
-        <li class="reveal"><span>Deploying to the cloud</span></li>
-        <li class="reveal"><span>Persistent storage &amp; databases</span></li>
-        <li class="reveal"><span>DDEV, Lando — do you still need them?</span></li>
+        <li class="reveal"><span>The Dockerfile — your options, anatomy, and key decisions</span></li>
+        <li class="reveal"><span>Running Kubernetes locally — and what about DDEV &amp; Lando?</span></li>
+        <li class="reveal"><span>Deploying to the cloud — registry, cluster, manifests, TLS</span></li>
+        <li class="reveal"><span>Persistent storage — PVCs, S3, and the <code>files/</code> gotcha</span></li>
+        <li class="reveal"><span>The database question — in-cluster vs. managed</span></li>
+        <li class="reveal"><span>Bonus: open-source starter kit &amp; real-world cost breakdown</span></li>
       </ol>
     </div>
-  </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Agenda</span>
   </div>
 </section>
 
@@ -507,16 +502,18 @@ body.edit-active [contenteditable] {
       <ul class="sw-bullets">
         <li class="reveal"><span><strong>A container orchestrator</strong> — it runs your Docker containers, decides where they live, and keeps them alive</span></li>
         <li class="reveal"><span><strong>Open source</strong>, originally from Google, now the industry standard</span></li>
-        <li class="reveal"><span><strong>Scales automatically</strong> — need more traffic? Kubernetes spins up more copies of your app</span></li>
+        <li class="reveal">
+          <span><strong>Scales automatically</strong> — more traffic? Kubernetes spins up more copies of your app</span>
+          <ul class="sw-bullets">
+            <li class="reveal"><span>Horizontal vs. vertical scaling</span></li>
+          </ul>
+        </li>
         <li class="reveal"><span><strong>Self-healing</strong> — crashed container? It restarts it without you lifting a finger</span></li>
       </ul>
       <div class="sw-callout reveal">
         If Docker is like a shipping container, Kubernetes is the port authority managing thousands of them.
       </div>
     </div>
-  </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>What Is Kubernetes?</span>
   </div>
 </section>
 
@@ -531,18 +528,26 @@ body.edit-active [contenteditable] {
     </div>
     <div class="sw-right">
       <div class="kicker reveal">Why should we care?</div>
-      <h2 class="reveal">Kubernetes &amp; Drupal</h2>
+      <h2 class="reveal">Kubernetes + Drupal</h2>
       <div class="red-rule"></div>
       <ul class="sw-bullets">
         <li class="reveal"><span><strong>Consistency</strong> — the same container runs locally, in staging, and in production. No more "works on my machine"</span></li>
         <li class="reveal"><span><strong>Hosting flexibility</strong> — DigitalOcean, AWS, GCP, Azure — all speak Kubernetes. You're not locked in</span></li>
         <li class="reveal"><span><strong>Scalability</strong> — handle traffic spikes by scaling your Drupal pods horizontally</span></li>
         <li class="reveal"><span><strong>GitOps-ready</strong> — your entire infrastructure lives in code, next to your Drupal codebase</span></li>
+        <li class="reveal"><span><strong>On-Prem</strong> — for when you're not allowed to use Pantheon, Acquia</span></li>
       </ul>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Why Kubernetes?</span>
+</section>
+
+<!-- SLIDE 4A - THE DIAGRAM -->
+<section class="slide" id="s4a">
+  <div class="sw-layout">
+    <div class="sw-left"><span class="sw-tag reveal-left">Diagram</span></div>
+    <div class="sw-right">
+      <img src="figure1.png" alt="diagram" style="max-height: 100%;" />
+    </div>
   </div>
 </section>
 
@@ -580,9 +585,6 @@ body.edit-active [contenteditable] {
       <p class="lead reveal" style="margin-top: clamp(0.75rem,1.5vh,1.5rem)">We'll focus on building your own — it's not as scary as it sounds.</p>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Dockerfile Options</span>
-  </div>
 </section>
 
 <!-- ==========================================
@@ -608,9 +610,6 @@ body.edit-active [contenteditable] {
       <span class="keyword">ENTRYPOINT</span> ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/app.conf"]</div>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Dockerfile Anatomy</span>
-  </div>
 </section>
 
 <!-- ==========================================
@@ -630,13 +629,10 @@ body.edit-active [contenteditable] {
         <li class="reveal"><span><strong>Base image</strong> — <code>php:8.3-fpm-alpine</code> is small and fast; <code>-bookworm</code> has more system libs available</span></li>
         <li class="reveal"><span><strong>PHP extensions</strong> — Drupal needs <code>pdo_mysql</code>, <code>gd</code>, <code>opcache</code>, <code>apcu</code>; add more for your modules</span></li>
         <li class="reveal"><span><strong>Nginx vs Apache</strong> — run as a sidecar container, or bake Nginx in with a custom entrypoint</span></li>
-        <li class="reveal"><span><strong>Build vs runtime</strong> — run Composer during build (good for prod)</span></li>
+        <li class="reveal"><span><strong>Build vs runtime</strong> — run Composer during build?</span></li>
         <li class="reveal"><span><strong>Non-root user</strong> — always run the app as a non-root user in production</span></li>
       </ul>
     </div>
-  </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Build Your Own</span>
   </div>
 </section>
 
@@ -676,9 +672,6 @@ body.edit-active [contenteditable] {
       </div>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Local Kubernetes</span>
-  </div>
 </section>
 
 <!-- ==========================================
@@ -705,9 +698,6 @@ body.edit-active [contenteditable] {
       </div>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>DDEV &amp; Lando</span>
-  </div>
 </section>
 
 <!-- ==========================================
@@ -732,8 +722,17 @@ body.edit-active [contenteditable] {
       </ol>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Cloud Deployment</span>
+</section>
+
+<!-- SLIDE 10A - NETWORK DIAGRAM (figure 2) -->
+<section class="slide" id="s10a">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Network</span>
+    </div>
+    <div class="sw-right">
+      <img src="figure2.png" alt="network diagram" style="max-height: 100%" />
+    </div>
   </div>
 </section>
 
@@ -760,9 +759,6 @@ body.edit-active [contenteditable] {
         The <strong>s3fs</strong> Drupal module lets you point <code>public://</code> at an S3-compatible bucket — no PVC headaches, scales infinitely.
       </div>
     </div>
-  </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Persistent Storage</span>
   </div>
 </section>
 
@@ -801,9 +797,6 @@ body.edit-active [contenteditable] {
       </div>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Database</span>
-  </div>
 </section>
 
 <!-- ==========================================
@@ -825,10 +818,10 @@ body.edit-active [contenteditable] {
 <span class="cmd">git clone</span> https://github.com/koppieesq/rail-baron
 
 <span class="comment"># What's inside:</span>
-<span class="comment">#   Dockerfile         — PHP-FPM + Nginx, production-ready</span>
-<span class="comment">#   k8s/               — Deployment, Service, Ingress manifests</span>
-<span class="comment">#   k8s/secrets.yaml   — Template for DB credentials</span>
-<span class="comment">#   README.md          — Step-by-step setup guide</span></div>
+<span class="comment">#   Dockerfile                — PHP-FPM + Nginx, production-ready</span>
+<span class="comment">#   k8s/                      — Deployment, Service, Ingress manifests</span>
+<span class="comment">#   k8s/secret.example.yaml   — Template for DB credentials</span>
+<span class="comment">#   README.md                 — Step-by-step setup guide</span></div>
       <div style="margin-top: clamp(0.6rem, 1.5vh, 1.5rem)">
         <span class="sw-badge filled reveal">Free</span>
         <span class="sw-badge reveal">GPL License</span>
@@ -836,19 +829,38 @@ body.edit-active [contenteditable] {
       </div>
     </div>
   </div>
-  <div class="sw-footer">
-    <span>Demystifying Kubernetes</span><div class="pip"></div><span>Bonus</span>
+</section>
+
+<!-- SLIDE 13A - THE DIAGRAM -->
+<section class="slide" id="s13a">
+  <div class="sw-layout">
+    <div class="sw-left"><span class="sw-tag reveal-left">Costs</span></div>
+    <div class="sw-right">
+      <img src="figure3.png" alt="diagram" style="max-height: 100%;" />
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s14">
+  <div class="sw-layout">
+    <div class="sw-left">
+      <span class="sw-tag reveal-left">Demo</span>
+      <div class="sw-num">14</div>
+    </div>
+    <div class="sw-right">
+      <div class="big-thanks reveal"><em>Live Demo Time</em></div>
+    </div>
   </div>
 </section>
 
 <!-- ==========================================
      SLIDE 14 — Q&A / THANK YOU
      ========================================== -->
-<section class="slide" id="s14">
+<section class="slide" id="s15">
   <div class="sw-layout">
     <div class="sw-left">
-      <span class="sw-tag reveal-left">Q&amp;A</span>
-      <div class="sw-num">14</div>
+      <span class="sw-tag reveal-left">Exit</span>
+      <div class="sw-num">15</div>
     </div>
     <div class="sw-right">
       <div class="kicker reveal">That's a wrap</div>
@@ -858,6 +870,7 @@ body.edit-active [contenteditable] {
       <ul class="sw-bullets" style="margin-top: clamp(0.5rem,1.2vh,1.2rem)">
         <li class="reveal"><span><strong>Slides &amp; starter kit</strong> — github.com/koppieesq/rail-baron</span></li>
         <li class="reveal"><span><strong>Drupal.org</strong> — drupal.org/u/koppie</span></li>
+        <li class="reveal"><span><strong>We're hiring!</strong> - https://www.tesla.com/careers/search/job/product-manager-vehicle-service-268625</span></li>
       </ul>
     </div>
   </div>
