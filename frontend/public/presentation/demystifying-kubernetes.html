@@ -475,11 +475,12 @@ body.edit-active [contenteditable] {
       <div class="red-rule"></div>
       <ol class="sw-numbered">
         <li class="reveal"><span>What is Kubernetes, and why should Drupal developers care?</span></li>
-        <li class="reveal"><span>The Dockerfile — your options, and how to write your own</span></li>
-        <li class="reveal"><span>Running Kubernetes locally</span></li>
-        <li class="reveal"><span>Deploying to the cloud</span></li>
-        <li class="reveal"><span>Persistent storage &amp; databases</span></li>
-        <li class="reveal"><span>DDEV, Lando — do you still need them?</span></li>
+        <li class="reveal"><span>The Dockerfile — your options, anatomy, and key decisions</span></li>
+        <li class="reveal"><span>Running Kubernetes locally — and what about DDEV &amp; Lando?</span></li>
+        <li class="reveal"><span>Deploying to the cloud — registry, cluster, manifests, TLS</span></li>
+        <li class="reveal"><span>Persistent storage — PVCs, S3, and the <code>files/</code> gotcha</span></li>
+        <li class="reveal"><span>The database question — in-cluster vs. managed</span></li>
+        <li class="reveal"><span>Bonus: open-source starter kit &amp; real-world cost breakdown</span></li>
       </ol>
     </div>
   </div>
@@ -527,13 +528,14 @@ body.edit-active [contenteditable] {
     </div>
     <div class="sw-right">
       <div class="kicker reveal">Why should we care?</div>
-      <h2 class="reveal">Kubernetes &amp; Drupal</h2>
+      <h2 class="reveal">Kubernetes + Drupal</h2>
       <div class="red-rule"></div>
       <ul class="sw-bullets">
         <li class="reveal"><span><strong>Consistency</strong> — the same container runs locally, in staging, and in production. No more "works on my machine"</span></li>
         <li class="reveal"><span><strong>Hosting flexibility</strong> — DigitalOcean, AWS, GCP, Azure — all speak Kubernetes. You're not locked in</span></li>
         <li class="reveal"><span><strong>Scalability</strong> — handle traffic spikes by scaling your Drupal pods horizontally</span></li>
         <li class="reveal"><span><strong>GitOps-ready</strong> — your entire infrastructure lives in code, next to your Drupal codebase</span></li>
+        <li class="reveal"><span><strong>On-Prem</strong> — for when you're not allowed to use Pantheon, Acquia</span></li>
       </ul>
     </div>
   </div>
