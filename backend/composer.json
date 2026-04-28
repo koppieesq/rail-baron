@@ -51,7 +51,7 @@
         "drupal/tara": "^11.0",
         "drupal/token": "^1.16",
         "drupal/vani": "^11.0",
-        "drush/drush": "^13",
+        "drush/drush": "^13.6",
         "mglaman/composer-drupal-lenient": "^1.0"
     },
     "conflict": {
