@@ -11,7 +11,8 @@
       "Bash(curl:*)",
       "WebSearch",
       "Bash(xargs cat:*)",
-      "WebFetch(domain:www.drupal.org)"
+      "WebFetch(domain:www.drupal.org)",
+      "Bash(gh pr *)"
     ]
   }
 }
