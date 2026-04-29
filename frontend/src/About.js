@@ -15,7 +15,6 @@ function About() {
             <p><T>My name is Jordan Koplowicz and I am the sole proprietor of <a href="https://koplowiczandsons.com">
                 Koplowicz & Sons</a>. I have been building websites since 2005, and writing software a lot longer than
                 that.</T></p>
-            <p><T>I invite you to visit my professional site: <a href="https://koplowiczandsons.com">Koplowicz & Sons</a>.</T></p>
             <p><img style={{width: "100%"}} alt="Jordan Koplowicz and sons" src="Koplowicz-old.jpg"/></p>
         </div>);
 }
